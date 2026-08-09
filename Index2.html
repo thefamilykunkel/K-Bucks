@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>K-Bucks Reward Tracker</title>
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --primary: #4F46E5;
+      --success-light: #D1FAE5;
+      --warning-light: #FEF3C7;
+      --danger: #EF4444;
+      --gray-bg: #F9FAFB;
+      --card-bg: #FFFFFF;
+      --text: #1F2937;
+      --text-muted: #6B7280;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { background-color: var(--gray-bg); color: var(--text); padding: 16px; max-width: 600px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 20px; }
+    h1 { font-size: 2rem; color: var(--primary); margin-bottom: 8px; }
+    .status-banner {
+      text-align: center; font-size: 0.8rem; color: #10B981; margin-bottom: 12px; font-weight: 600;
+    }
+    .profile-selector { display: flex; justify-content: center; gap: 10px; margin-bottom: 16px; }
+    .profile-btn {
+      padding: 8px 16px; border: 2px solid var(--primary); border-radius: 20px;
+      background: white; color: var(--primary); font-weight: bold; cursor: pointer;
+    }
+    .profile-btn.active { background: var(--primary); color: white; }
+    .balance-card {
+      background: linear-gradient(135deg, #6366F1, #4F46E5); color: white;
+      padding: 24px; border-radius: 16px; text-align: center; margin-bottom: 24px;
+      box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+    }
+    .balance-amount { font-size: 3.5rem; font-weight: 800; }
+    .balance-label { text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; opacity: 0.9; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid #E5E7EB; }
+    .tab-btn {
+      flex: 1; padding: 12px; border: none; background: none; font-weight: 600;
+      font-size: 1rem; color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent;
+    }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .list-container { display: flex; flex-direction: column; gap: 12px; }
+    .card-item {
+      background: var(--card-bg); border-radius: 12px; padding: 16px;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .item-info { flex: 1; padding-right: 12px; }
+    .item-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 4px; }
+    .item-note { font-size: 0.85rem; color: var(--text-muted); font-style: italic; }
+    .action-btn {
+      padding: 10px 16px; border: none; border-radius: 8px; font-weight: bold;
+      cursor: pointer; white-space: nowrap;
+    }
+    .btn-earn { background: var(--success-light); color: #065F46; }
+    .btn-spend { background: var(--warning-light); color: #92400E; }
+    .history-item {
+      display: flex; justify-content: space-between; padding: 12px;
+      background: white; border-radius: 8px; margin-bottom: 8px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .val-positive { color: #10B981; font-weight: bold; }
+    .val-negative { color: var(--danger); font-weight: bold; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🪙 K-Bucks Tracker</h1>
+    <div class="status-banner" id="statusBanner">● Live Cloud Sync Active</div>
+    <div class="profile-selector" id="profileSelector"></div>
+  </header>
+
+  <div class="balance-card">
+    <div class="balance-label">Current Balance</div>
+    <div class="balance-amount" id="balanceDisplay">...</div>
+    <div>K-Bucks</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('earn')">Earn</button>
+    <button class="tab-btn" onclick="switchTab('spend')">Spend</button>
+    <button class="tab-btn" onclick="switchTab('history')">History</button>
+  </div>
+
+  <div id="earnTab" class="list-container"></div>
+  <div id="spendTab" class="list-container hidden"></div>
+  <div id="historyTab" class="list-container hidden"></div>
+
+  <script>
+    // --- YOUR FIREBASE CONFIGURATION ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyDAkEdkBF9WRWiXm7HYtc95wZtO8Jc9vE4",
+      authDomain: "k-bucks-b751f.firebaseapp.com",
+      databaseURL: "https://k-bucks-b751f-default-rtdb.firebaseio.com",
+      projectId: "k-bucks-b751f",
+      storageBucket: "k-bucks-b751f.firebasestorage.app",
+      messagingSenderId: "923654543701",
+      appId: "1:923654543701:web:c13c9142d47aced6afb7dc",
+      measurementId: "G-M5952MPG67"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const choresData = [
+      { name: "Make your bed", value: 2, note: "Every morning" },
+      { name: "Tidy your room", value: 2, note: "Before bed" },
+      { name: "Pick up toys around the house daily", value: 2, note: "Before bed" },
+      { name: "Dishes in sink", value: 2, note: "" },
+      { name: "Put dirty laundry in hamper", value: 2, note: "Not the floor!" },
+      { name: "Chore done without asking", value: 3, note: "" },
+      { name: "Change to PJs, RR, Brush teeth, without help", value: 5, note: "" },
+      { name: "Fold clean clothes & put away", value: 10, note: "In drawers/closet" },
+      { name: "Let sibling pick show", value: 5, note: "Per day" },
+      { name: "Let sibling unlock door", value: 5, note: "Per day" },
+      { name: "Open door for family/stranger at a place", value: 5, note: "Per day" },
+      { name: "Do something kind for family", value: 5, note: "" },
+      { name: "Bring in trash can", value: 5, note: "" },
+      { name: "Full 'clean sweep' day", value: 10, note: "All chores done, no reminders" }
+    ];
+
+    const rewardsData = [
+      { name: "Dessert", cost: 5, note: "" },
+      { name: "1 minute of tablet time", cost: 1, note: "Min 15 mins" },
+      { name: "30 minutes of TV time", cost: 15, note: "Both have to, and agree" },
+      { name: "Pick the movie for family movie night", cost: 25, note: "" },
+      { name: "Stay up 30 minutes past bedtime weekend", cost: 20, note: "" },
+      { name: "Small toy or treat from dollar store", cost: 50, note: "$5 Max" },
+      { name: "$10 towards a prize", cost: 100, note: "$10 Max" },
+      { name: "Fun place (Cidercade, Urban Air, etc.)", cost: 200, note: "Each kid" }
+    ];
+
+    const kids = ["Kid 1", "Kid 2"];
+    let currentKid = kids[0];
+    let currentBalance = 0;
+
+    function initCloudSync() {
+      renderProfiles();
+      renderChores();
+      renderRewards();
+
+      // Realtime listener for the active kid
+      db.ref(`kids/${currentKid}`).on('value', snapshot => {
+        const data = snapshot.val() || { balance: 0, history: {} };
+        currentBalance = data.balance || 0;
+        document.getElementById('balanceDisplay').innerText = currentBalance;
+        
+        const historyArray = Object.values(data.history || {}).reverse();
+        renderHistory(historyArray);
+        renderRewards();
+      });
+    }
+
+    function selectProfile(kid) {
+      db.ref(`kids/${currentKid}`).off();
+      currentKid = kid;
+      initCloudSync();
+    }
+
+    function earn(title, amount) {
+      const newBal = currentBalance + amount;
+      const historyRef = db.ref(`kids/${currentKid}/history`).push();
+      
+      db.ref(`kids/${currentKid}`).update({ balance: newBal });
+      historyRef.set({
+        title,
+        change: amount,
+        date: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+      });
+    }
+
+    function spend(title, amount) {
+      if (currentBalance < amount) return alert("Not enough K-Bucks!");
+      const newBal = currentBalance - amount;
+      const historyRef = db.ref(`kids/${currentKid}/history`).push();
+
+      db.ref(`kids/${currentKid}`).update({ balance: newBal });
+      historyRef.set({
+        title,
+        change: -amount,
+        date: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+      });
+    }
+
+    function renderProfiles() {
+      document.getElementById('profileSelector').innerHTML = kids.map(k => `
+        <button class="profile-btn ${k === currentKid ? 'active' : ''}" onclick="selectProfile('${k}')">${k}</button>
+      `).join('');
+    }
+
+    function renderChores() {
+      document.getElementById('earnTab').innerHTML = choresData.map(c => `
+        <div class="card-item">
+          <div class="item-info">
+            <div class="item-title">${c.name}</div>
+            ${c.note ? `<div class="item-note">${c.note}</div>` : ''}
+          </div>
+          <button class="action-btn btn-earn" onclick="earn('${c.name.replace(/'/g, "\\'")}', ${c.value})">+${c.value} KB</button>
+        </div>
+      `).join('');
+    }
+
+    function renderRewards() {
+      document.getElementById('spendTab').innerHTML = rewardsData.map(r => `
+        <div class="card-item">
+          <div class="item-info">
+            <div class="item-title">${r.name}</div>
+            ${r.note ? `<div class="item-note">${r.note}</div>` : ''}
+          </div>
+          <button class="action-btn btn-spend" ${currentBalance < r.cost ? 'disabled style="opacity:0.5;"' : ''} onclick="spend('${r.name.replace(/'/g, "\\'")}', ${r.cost})">-${r.cost} KB</button>
+        </div>
+      `).join('');
+    }
+
+    function renderHistory(history) {
+      const historyTab = document.getElementById('historyTab');
+      if (!history || history.length === 0) {
+        historyTab.innerHTML = `<div style="text-align:center; color: var(--text-muted); padding: 20px;">No transaction history yet.</div>`;
+        return;
+      }
+      historyTab.innerHTML = history.map(h => `
+        <div class="history-item">
+          <div>
+            <div style="font-weight:600;">${h.title}</div>
+            <div style="font-size:0.75rem; color: var(--text-muted);">${h.date}</div>
+          </div>
+          <div class="${h.change > 0 ? 'val-positive' : 'val-negative'}">${h.change > 0 ? '+' : ''}${h.change} KB</div>
+        </div>
+      `).join('');
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('earnTab').classList.add('hidden');
+      document.getElementById('spendTab').classList.add('hidden');
+      document.getElementById('historyTab').classList.add('hidden');
+
+      if (tabName === 'earn') document.getElementById('earnTab').classList.remove('hidden');
+      if (tabName === 'spend') document.getElementById('spendTab').classList.remove('hidden');
+      if (tabName === 'history') document.getElementById('historyTab').classList.remove('hidden');
+      event.target.classList.add('active');
+    }
+
+    initCloudSync();
+  </script>
+</body>
+</html>
