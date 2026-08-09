@@ -21,43 +21,62 @@
       --text-muted: #6B7280;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-    body { background-color: var(--gray-bg); color: var(--text); padding: 16px; max-width: 600px; margin: 0 auto; }
-    header { text-align: center; margin-bottom: 20px; }
-    h1 { font-size: 2rem; color: var(--primary); margin-bottom: 8px; }
-    .status-banner {
-      text-align: center; font-size: 0.8rem; color: #10B981; margin-bottom: 12px; font-weight: 600;
+    body { background-color: var(--gray-bg); color: var(--text); padding: 12px; max-width: 600px; margin: 0 auto; }
+    
+    /* Floating Header Section */
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background-color: var(--gray-bg);
+      padding-top: 8px;
+      padding-bottom: 8px;
     }
-    .profile-selector { display: flex; justify-content: center; gap: 10px; margin-bottom: 16px; }
+
+    header { text-align: center; margin-bottom: 12px; }
+    h1 { font-size: 1.6rem; color: var(--primary); margin-bottom: 4px; }
+    
+    .status-banner {
+      text-align: center; font-size: 0.75rem; color: #10B981; margin-bottom: 8px; font-weight: 600;
+    }
+    
+    .profile-selector { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; }
     .profile-btn {
-      padding: 8px 16px; border: 2px solid var(--primary); border-radius: 20px;
-      background: white; color: var(--primary); font-weight: bold; cursor: pointer;
+      padding: 6px 14px; border: 2px solid var(--primary); border-radius: 20px;
+      background: white; color: var(--primary); font-weight: bold; cursor: pointer; font-size: 0.9rem;
     }
     .profile-btn.active { background: var(--primary); color: white; }
+    
+    /* Balance Card */
     .balance-card {
       background: linear-gradient(135deg, #6366F1, #4F46E5); color: white;
-      padding: 24px; border-radius: 16px; text-align: center; margin-bottom: 24px;
-      box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+      padding: 16px; border-radius: 16px; text-align: center; margin-bottom: 12px;
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
     }
-    .balance-amount { font-size: 3.5rem; font-weight: 800; }
-    .balance-label { text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; opacity: 0.9; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid #E5E7EB; }
+    .balance-amount { font-size: 3rem; font-weight: 800; line-height: 1.1; }
+    .balance-label { text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; opacity: 0.95; font-weight: 700; }
+    
+    /* Tabs */
+    .tabs { display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 2px solid #E5E7EB; background: var(--gray-bg); }
     .tab-btn {
-      flex: 1; padding: 12px; border: none; background: none; font-weight: 600;
-      font-size: 1rem; color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent;
+      flex: 1; padding: 10px; border: none; background: none; font-weight: 600;
+      font-size: 0.95rem; color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent;
     }
     .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
-    .list-container { display: flex; flex-direction: column; gap: 12px; }
+    
+    /* List Items */
+    .list-container { display: flex; flex-direction: column; gap: 10px; padding-bottom: 24px; }
     .card-item {
-      background: var(--card-bg); border-radius: 12px; padding: 16px;
+      background: var(--card-bg); border-radius: 12px; padding: 14px 16px;
       display: flex; justify-content: space-between; align-items: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
     .item-info { flex: 1; padding-right: 12px; }
-    .item-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 4px; }
-    .item-note { font-size: 0.85rem; color: var(--text-muted); font-style: italic; }
+    .item-title { font-weight: 700; font-size: 1rem; margin-bottom: 2px; }
+    .item-note { font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
     .action-btn {
       padding: 10px 16px; border: none; border-radius: 8px; font-weight: bold;
-      cursor: pointer; white-space: nowrap;
+      cursor: pointer; white-space: nowrap; font-size: 0.9rem;
     }
     .btn-earn { background: var(--success-light); color: #065F46; }
     .btn-spend { background: var(--warning-light); color: #92400E; }
@@ -73,24 +92,28 @@
 </head>
 <body>
 
-  <header>
-    <h1>🪙 K-Bucks Tracker</h1>
-    <div class="status-banner" id="statusBanner">● Live Cloud Sync Active</div>
-    <div class="profile-selector" id="profileSelector"></div>
-  </header>
+  <!-- Sticky Top Container -->
+  <div class="sticky-header">
+    <header>
+      <h1>🪙 K-Bucks Tracker</h1>
+      <div class="status-banner" id="statusBanner">● Live Cloud Sync Active</div>
+      <div class="profile-selector" id="profileSelector"></div>
+    </header>
 
-  <div class="balance-card">
-    <div class="balance-label">Current Balance</div>
-    <div class="balance-amount" id="balanceDisplay">...</div>
-    <div>K-Bucks</div>
+    <div class="balance-card">
+      <div class="balance-label" id="balanceLabel">BALANCE</div>
+      <div class="balance-amount" id="balanceDisplay">...</div>
+      <div style="font-size: 0.85rem; opacity: 0.9;">K-Bucks</div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('earn', event)">Earn</button>
+      <button class="tab-btn" onclick="switchTab('spend', event)">Spend</button>
+      <button class="tab-btn" onclick="switchTab('history', event)">History</button>
+    </div>
   </div>
 
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('earn')">Earn</button>
-    <button class="tab-btn" onclick="switchTab('spend')">Spend</button>
-    <button class="tab-btn" onclick="switchTab('history')">History</button>
-  </div>
-
+  <!-- Content Lists -->
   <div id="earnTab" class="list-container"></div>
   <div id="spendTab" class="list-container hidden"></div>
   <div id="historyTab" class="list-container hidden"></div>
@@ -140,16 +163,27 @@
       { name: "Fun place (Cidercade, Urban Air, etc.)", cost: 250, note: "Each kid" }
     ];
 
+    // Replace with your kids' names here:
     const kids = ["Abby", "Nolan"];
     let currentKid = kids[0];
     let currentBalance = 0;
 
+    function updateBalanceLabel() {
+      const label = document.getElementById('balanceLabel');
+      const name = currentKid.toUpperCase();
+      if (name.endsWith('S')) {
+        label.innerText = `${name}' BALANCE`;
+      } else {
+        label.innerText = `${name}'S BALANCE`;
+      }
+    }
+
     function initCloudSync() {
       renderProfiles();
+      updateBalanceLabel();
       renderChores();
       renderRewards();
 
-      // Realtime listener for the active kid
       db.ref(`kids/${currentKid}`).on('value', snapshot => {
         const data = snapshot.val() || { balance: 0, history: {} };
         currentBalance = data.balance || 0;
@@ -239,7 +273,7 @@
       `).join('');
     }
 
-    function switchTab(tabName) {
+    function switchTab(tabName, evt) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.getElementById('earnTab').classList.add('hidden');
       document.getElementById('spendTab').classList.add('hidden');
@@ -248,10 +282,14 @@
       if (tabName === 'earn') document.getElementById('earnTab').classList.remove('hidden');
       if (tabName === 'spend') document.getElementById('spendTab').classList.remove('hidden');
       if (tabName === 'history') document.getElementById('historyTab').classList.remove('hidden');
-      event.target.classList.add('active');
+      
+      if (evt && evt.target) {
+        evt.target.classList.add('active');
+      }
     }
 
     initCloudSync();
   </script>
 </body>
 </html>
+
