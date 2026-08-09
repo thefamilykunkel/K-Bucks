@@ -42,18 +42,9 @@
     .status-banner { color: #10B981; font-weight: 600; }
     
     .mode-badge {
-      background: #E0E7FF; color: var(--primary); padding: 4px 10px;
-      border-radius: 12px; font-weight: bold; cursor: pointer; border: none;
+      background: #E0E7FF; color: var(--primary); padding: 5px 12px;
+      border-radius: 12px; font-weight: bold; cursor: pointer; border: none; font-size: 0.8rem;
     }
-
-    .parent-selector {
-      display: flex; justify-content: center; gap: 8px; margin-bottom: 8px;
-    }
-    .parent-btn {
-      padding: 4px 12px; border: 1px solid var(--primary); border-radius: 12px;
-      background: white; color: var(--primary); font-size: 0.8rem; font-weight: bold; cursor: pointer;
-    }
-    .parent-btn.active { background: #312E81; color: white; border-color: #312E81; }
 
     .profile-selector { display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; }
     .profile-btn {
@@ -116,12 +107,6 @@
         <button class="mode-badge" id="modeBtn" onclick="toggleParentMode()">👀 Kid View</button>
       </div>
 
-      <!-- Parent Selector (Mom vs Dad) -->
-      <div class="parent-selector hidden" id="parentSelector">
-        <button class="parent-btn active" id="btnMom" onclick="setParent('Mom')">Logged in as Mom</button>
-        <button class="parent-btn" id="btnDad" onclick="setParent('Dad')">Logged in as Dad</button>
-      </div>
-
       <div class="profile-selector" id="profileSelector"></div>
     </header>
 
@@ -158,8 +143,9 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // PARENT PIN (Default: 1234)
-    const PARENT_PIN = "1234";
+    // SEPARATE PARENT PINS (Change these if you want!)
+    const MOM_PIN = "1348";
+    const DAD_PIN = "1728";
 
     const choresData = [
       { id: "c1", name: "Make your bed", value: 2, note: "Every morning", daily: true },
@@ -194,7 +180,7 @@
     let currentKid = kids[0];
     let currentBalance = 0;
     let isParentMode = false;
-    let activeParent = "Mom";
+    let activeParent = "";
     let completedDailyChores = {};
 
     function getTodayString() {
@@ -204,33 +190,31 @@
 
     function toggleParentMode() {
       if (!isParentMode) {
-        const pin = prompt("Enter Parent PIN (Default is 1234):");
-        if (pin === PARENT_PIN) {
+        const pin = prompt("Enter Mom or Dad PIN:");
+        if (pin === MOM_PIN) {
           isParentMode = true;
-          document.getElementById('modeBtn').innerText = "🔒 Parent Mode";
+          activeParent = "Mom";
+          document.getElementById('modeBtn').innerText = "🔒 Parent: Mom";
           document.getElementById('modeBtn').style.background = "#312E81";
           document.getElementById('modeBtn').style.color = "white";
-          document.getElementById('parentSelector').classList.remove('hidden');
+        } else if (pin === DAD_PIN) {
+          isParentMode = true;
+          activeParent = "Dad";
+          document.getElementById('modeBtn').innerText = "🔒 Parent: Dad";
+          document.getElementById('modeBtn').style.background = "#312E81";
+          document.getElementById('modeBtn').style.color = "white";
         } else if (pin !== null) {
           alert("Incorrect PIN!");
         }
       } else {
         isParentMode = false;
+        activeParent = "";
         document.getElementById('modeBtn').innerText = "👀 Kid View";
         document.getElementById('modeBtn').style.background = "#E0E7FF";
         document.getElementById('modeBtn').style.color = "var(--primary)";
-        document.getElementById('parentSelector').classList.add('hidden');
       }
       renderChores();
       renderRewards();
-    }
-
-    function setParent(p) {
-      activeParent = p;
-      document.getElementById('btnMom').classList.toggle('active', p === 'Mom');
-      document.getElementById('btnMom').innerText = p === 'Mom' ? 'Logged in as Mom' : 'Switch to Mom';
-      document.getElementById('btnDad').classList.toggle('active', p === 'Dad');
-      document.getElementById('btnDad').innerText = p === 'Dad' ? 'Logged in as Dad' : 'Switch to Dad';
     }
 
     function updateBalanceLabel() {
