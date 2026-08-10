@@ -46,9 +46,9 @@
       border-radius: 12px; font-weight: bold; cursor: pointer; border: none; font-size: 0.8rem;
     }
 
-    .profile-selector { display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; }
+    .profile-selector { display: flex; justify-content: center; gap: 8px; margin-bottom: 6px; }
     .profile-btn {
-      padding: 4px 10px; border: 2px solid var(--primary); border-radius: 20px;
+      padding: 6px 10px; border: 2px solid var(--primary); border-radius: 20px;
       background: white; color: var(--primary); font-weight: bold; cursor: pointer; font-size: 0.9rem;
     }
     .profile-btn.active { background: var(--primary); color: white; }
@@ -58,7 +58,7 @@
       padding: 8px; border-radius: 10px; text-align: center; margin-bottom: 10px;
       box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
     }
-    .balance-amount { font-size: 1.5rem; font-weight: 800; line-height: 1.0; }
+    .balance-amount { font-size: 1.75rem; font-weight: 800; line-height: 1.0; }
     .balance-label { text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem; opacity: 0.95; font-weight: 700; }
     
     .tabs { display: flex; gap: 8px; margin-bottom: 10px; border-bottom: 2px solid #E5E7EB; background: var(--gray-bg); }
@@ -110,11 +110,9 @@
       <h1>🪙 K-Bucks Tracker</h1>
       <div class="status-bar">
         <span class="status-banner">● Live Sync Active</span>
-<div class="profile-selector" id="profileSelector"></div>
+        <div class="profile-selector" id="profileSelector"></div>
         <button class="mode-badge" id="modeBtn" onclick="toggleParentMode()">👀 Kid View</button>
       </div>
-
-      
     </header>
 
     <div class="balance-card">
