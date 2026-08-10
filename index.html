@@ -87,13 +87,19 @@
     .btn-disabled { background: #E5E7EB !important; color: #9CA3AF !important; cursor: not-allowed !important; }
 
     .history-item {
-      display: flex; justify-content: space-between; padding: 10px 12px;
+      display: flex; justify-content: space-between; align-items: center; padding: 10px 12px;
       background: white; border-radius: 8px; margin-bottom: 6px;
       box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
     .history-by { font-size: 0.7rem; color: var(--primary); font-weight: 600; }
     .val-positive { color: #10B981; font-weight: bold; }
     .val-negative { color: var(--danger); font-weight: bold; }
+    
+    .undo-btn {
+      background: #FEE2E2; color: #991B1B; border: none; padding: 4px 8px;
+      border-radius: 6px; font-size: 0.7rem; font-weight: bold; cursor: pointer;
+      margin-left: 8px;
+    }
     .hidden { display: none !important; }
   </style>
 </head>
@@ -143,9 +149,9 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // SEPARATE PARENT PINS (Change these if you want!)
-    const MOM_PIN = "1348";
-    const DAD_PIN = "1728";
+    // SEPARATE PARENT PINS
+    const MOM_PIN = "1111";
+    const DAD_PIN = "2222";
 
     const choresData = [
       { id: "c1", name: "Make your bed", value: 2, note: "Every morning", daily: true },
@@ -182,6 +188,7 @@
     let isParentMode = false;
     let activeParent = "";
     let completedDailyChores = {};
+    let rawHistoryData = {};
 
     function getTodayString() {
       const d = new Date();
@@ -215,6 +222,7 @@
       }
       renderChores();
       renderRewards();
+      renderHistory(rawHistoryData);
     }
 
     function updateBalanceLabel() {
@@ -231,10 +239,10 @@
         const data = snapshot.val() || { balance: 0, history: {}, dailyChores: {} };
         currentBalance = data.balance || 0;
         completedDailyChores = data.dailyChores || {};
+        rawHistoryData = data.history || {};
         document.getElementById('balanceDisplay').innerText = currentBalance;
         
-        const historyArray = Object.values(data.history || {}).reverse();
-        renderHistory(historyArray);
+        renderHistory(rawHistoryData);
         renderChores();
         renderRewards();
       });
@@ -264,6 +272,7 @@
 
       db.ref(`kids/${currentKid}`).update(updates);
       historyRef.set({
+        choreId: choreId || null,
         title,
         change: amount,
         approvedBy: activeParent,
@@ -284,6 +293,22 @@
         approvedBy: activeParent,
         date: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
       });
+    }
+
+    function undoTransaction(key, change, choreId) {
+      if (!isParentMode) return;
+      if (!confirm("Are you sure you want to erase this transaction?")) return;
+
+      const newBal = Math.max(0, currentBalance - change);
+      const updates = {};
+      updates[`kids/${currentKid}/balance`] = newBal;
+      updates[`kids/${currentKid}/history/${key}`] = null;
+
+      if (choreId && completedDailyChores[choreId]) {
+        updates[`kids/${currentKid}/dailyChores/${choreId}`] = null;
+      }
+
+      db.ref().update(updates);
     }
 
     function renderProfiles() {
@@ -341,13 +366,16 @@
       }).join('');
     }
 
-    function renderHistory(history) {
+    function renderHistory(historyObj) {
       const historyTab = document.getElementById('historyTab');
-      if (!history || history.length === 0) {
+      const entries = Object.entries(historyObj || {}).reverse();
+
+      if (entries.length === 0) {
         historyTab.innerHTML = `<div style="text-align:center; color: var(--text-muted); padding: 20px;">No transaction history yet.</div>`;
         return;
       }
-      historyTab.innerHTML = history.map(h => `
+
+      historyTab.innerHTML = entries.map(([key, h]) => `
         <div class="history-item">
           <div>
             <div style="font-weight:600;">${h.title}</div>
@@ -355,7 +383,10 @@
               ${h.date} ${h.approvedBy ? `• <span class="history-by">By ${h.approvedBy}</span>` : ''}
             </div>
           </div>
-          <div class="${h.change > 0 ? 'val-positive' : 'val-negative'}">${h.change > 0 ? '+' : ''}${h.change} KB</div>
+          <div style="display:flex; align-items:center;">
+            <div class="${h.change > 0 ? 'val-positive' : 'val-negative'}">${h.change > 0 ? '+' : ''}${h.change} KB</div>
+            ${isParentMode ? `<button class="undo-btn" onclick="undoTransaction('${key}', ${h.change}, '${h.choreId || ''}')">Erase</button>` : ''}
+          </div>
         </div>
       `).join('');
     }
