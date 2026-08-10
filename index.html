@@ -94,8 +94,8 @@
     
     .tabs { display: flex; gap: 8px; margin-bottom: 2px; border-bottom: 2px solid #E5E7EB; background: var(--gray-bg); }
     .tab-btn {
-      flex: 1; padding: 2px; border: none; background: none; font-weight: 600;
-      font-size: 0.9rem; color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent;
+      flex: 1; padding: 6px; border: none; background: none; font-weight: 600;
+      font-size: 0.85rem; color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent;
     }
     .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
     
@@ -126,11 +126,25 @@
     .val-positive { color: #10B981; font-weight: bold; }
     .val-negative { color: var(--danger); font-weight: bold; }
     
-    .undo-btn {
-      background: #FEE2E2; color: #991B1B; border: none; padding: 4px 8px;
-      border-radius: 6px; font-size: 0.7rem; font-weight: bold; cursor: pointer;
-      margin-left: 8px;
+    .undo-btn, .btn-edit, .btn-delete {
+      border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; cursor: pointer; margin-left: 4px;
     }
+    .undo-btn, .btn-delete { background: #FEE2E2; color: #991B1B; }
+    .btn-edit { background: #E0E7FF; color: var(--primary); }
+
+    /* Manage Form Styles */
+    .manage-form {
+      background: var(--card-bg); border-radius: 12px; padding: 14px; margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08); display: flex; flex-direction: column; gap: 8px;
+    }
+    .manage-form h3 { font-size: 1rem; color: var(--primary); }
+    .manage-form input, .manage-form select {
+      padding: 8px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.85rem; width: 100%;
+    }
+    .form-row { display: flex; gap: 8px; }
+    .btn-save { background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .btn-cancel { background: #E5E7EB; color: var(--text); border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -158,12 +172,14 @@
       <button class="tab-btn active" onclick="switchTab('earn', event)">Earn</button>
       <button class="tab-btn" onclick="switchTab('spend', event)">Spend</button>
       <button class="tab-btn" onclick="switchTab('history', event)">History</button>
+      <button class="tab-btn hidden" id="manageTabBtn" onclick="switchTab('manage', event)">⚙️ Manage</button>
     </div>
   </div>
 
   <div id="earnTab" class="list-container"></div>
   <div id="spendTab" class="list-container hidden"></div>
   <div id="historyTab" class="list-container hidden"></div>
+  <div id="manageTab" class="list-container hidden"></div>
 
   <script>
     // FIREBASE CONFIG
@@ -185,7 +201,7 @@
     const MOM_PIN = "1348";
     const DAD_PIN = "1728";
 
-    const choresData = [
+    const defaultChoresData = [
       { id: "c1", name: "Make your bed", value: 2, note: "Every morning", daily: true },
       { id: "c2", name: "Tidy your room", value: 2, note: "Before bed, once a day", daily: true },
       { id: "c3", name: "Pick up toys around the house daily", value: 2, note: "Before bed ONLY, once a day", daily: true },
@@ -203,16 +219,19 @@
       { id: "c15", name: "Full 'clean sweep' day", value: 10, note: "All chores done, no reminders", daily: true }
     ];
 
-    const rewardsData = [
-      { name: "Dessert", cost: 5, note: "" },
-      { name: "15 Minutes Tablet time", cost: 15, note: "Use in 15 minutes blocks" },
-      { name: "30 minutes of TV time", cost: 15, note: "30 minute Blocks" },
-      { name: "Pick the movie for family movie night", cost: 25, note: "If both agree its free!!!" },
-      { name: "Stay up 30 minutes past bedtime on weekend", cost: 20, note: "Friday / Saturday nights" },
-      { name: "$5 toward treat or toy", cost: 100, note: "$5 Credit" },
-      { name: "$10 towards a prize", cost: 200, note: "$10 Credit" },
-      { name: "Fun place (Cidercade, Urban Air, etc.)", cost: 250, note: "Each kid" }
+    const defaultRewardsData = [
+      { id: "r1", name: "Dessert", cost: 5, note: "" },
+      { id: "r2", name: "15 Minutes Tablet time", cost: 15, note: "Use in 15 minutes blocks" },
+      { id: "r3", name: "30 minutes of TV time", cost: 15, note: "30 minute Blocks" },
+      { id: "r4", name: "Pick the movie for family movie night", cost: 25, note: "If both agree its free!!!" },
+      { id: "r5", name: "Stay up 30 minutes past bedtime on weekend", cost: 20, note: "Friday / Saturday nights" },
+      { id: "r6", name: "$5 toward treat or toy", cost: 100, note: "$5 Credit" },
+      { id: "r7", name: "$10 towards a prize", cost: 200, note: "$10 Credit" },
+      { id: "r8", name: "Fun place (Cidercade, Urban Air, etc.)", cost: 250, note: "Each kid" }
     ];
+
+    let choresData = [];
+    let rewardsData = [];
 
     const kids = ["Abby", "Nolan"];
     let currentKid = kids[0];
@@ -221,6 +240,8 @@
     let activeParent = "";
     let completedDailyChores = {};
     let rawHistoryData = {};
+    let editingItemId = null;
+    let editingItemType = 'chore';
 
     function getTodayString() {
       const d = new Date();
@@ -236,12 +257,14 @@
           document.getElementById('modeBtn').innerText = "🔒 Mom Mode";
           document.getElementById('modeBtn').style.background = "#312E81";
           document.getElementById('modeBtn').style.color = "white";
+          document.getElementById('manageTabBtn').classList.remove('hidden');
         } else if (pin === DAD_PIN) {
           isParentMode = true;
           activeParent = "Dad";
           document.getElementById('modeBtn').innerText = "🔒 Dad Mode";
           document.getElementById('modeBtn').style.background = "#312E81";
           document.getElementById('modeBtn').style.color = "white";
+          document.getElementById('manageTabBtn').classList.remove('hidden');
         } else if (pin !== null) {
           alert("Incorrect PIN!");
         }
@@ -251,10 +274,15 @@
         document.getElementById('modeBtn').innerText = "👀 Kid View";
         document.getElementById('modeBtn').style.background = "#E0E7FF";
         document.getElementById('modeBtn').style.color = "var(--primary)";
+        document.getElementById('manageTabBtn').classList.add('hidden');
+        if (document.getElementById('manageTab').classList.contains('active') || !document.getElementById('manageTab').classList.contains('hidden')) {
+          switchTab('earn');
+        }
       }
       renderChores();
       renderRewards();
       renderHistory(rawHistoryData);
+      renderManageTab();
     }
 
     function updateBalanceLabel() {
@@ -267,6 +295,29 @@
       renderProfiles();
       updateBalanceLabel();
 
+      // Sync Chores & Rewards List from Cloud
+      db.ref('settings').on('value', snapshot => {
+        const settings = snapshot.val() || {};
+        if (!settings.chores) {
+          db.ref('settings/chores').set(defaultChoresData);
+          choresData = defaultChoresData;
+        } else {
+          choresData = Object.values(settings.chores);
+        }
+
+        if (!settings.rewards) {
+          db.ref('settings/rewards').set(defaultRewardsData);
+          rewardsData = defaultRewardsData;
+        } else {
+          rewardsData = Object.values(settings.rewards);
+        }
+
+        renderChores();
+        renderRewards();
+        renderManageTab();
+      });
+
+      // Sync Kid Data
       db.ref(`kids/${currentKid}`).on('value', snapshot => {
         const data = snapshot.val() || { balance: 0, history: {}, dailyChores: {} };
         currentBalance = data.balance || 0;
@@ -423,15 +474,160 @@
       `).join('');
     }
 
+    /* --- MANAGE TAB IMPLEMENTATION --- */
+    function renderManageTab() {
+      if (!isParentMode) return;
+      const container = document.getElementById('manageTab');
+
+      let formTitle = editingItemId ? `Edit Item` : `Add New Chore or Reward`;
+
+      let formHtml = `
+        <form class="manage-form" onsubmit="saveItem(event)">
+          <h3>${formTitle}</h3>
+          <div class="form-row">
+            <select id="itemType" onchange="toggleFormFields()" ${editingItemId ? 'disabled' : ''}>
+              <option value="chore" ${editingItemType === 'chore' ? 'selected' : ''}>Chore (Earn)</option>
+              <option value="reward" ${editingItemType === 'reward' ? 'selected' : ''}>Reward (Spend)</option>
+            </select>
+            <input type="number" id="itemVal" placeholder="Points/Cost" required />
+          </div>
+          <input type="text" id="itemName" placeholder="Item Name" required />
+          <input type="text" id="itemNote" placeholder="Note / Description (Optional)" />
+          <div class="form-row" id="dailyCheckRow">
+            <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" id="itemDaily" style="width: auto;" /> Once per day limit?
+            </label>
+          </div>
+          <div class="form-row">
+            <button type="submit" class="btn-save">${editingItemId ? 'Update' : 'Add Item'}</button>
+            ${editingItemId ? `<button type="button" class="btn-cancel" onclick="resetManageForm()">Cancel</button>` : ''}
+          </div>
+        </form>
+      `;
+
+      let choresListHtml = `
+        <h4 style="margin: 8px 0 4px 0; color: var(--primary);">Current Chores</h4>
+        ${choresData.map(c => `
+          <div class="card-item">
+            <div class="item-info">
+              <div class="item-title">${c.name} (+${c.value} KB)</div>
+              <div class="item-note">${c.note ? c.note + ' • ' : ''}${c.daily ? 'Daily' : 'Multiple per day'}</div>
+            </div>
+            <div>
+              <button class="btn-edit" onclick="editItem('${c.id}', 'chore')">Edit</button>
+              <button class="btn-delete" onclick="deleteItem('${c.id}', 'chore')">Delete</button>
+            </div>
+          </div>
+        `).join('')}
+      `;
+
+      let rewardsListHtml = `
+        <h4 style="margin: 12px 0 4px 0; color: var(--primary);">Current Rewards</h4>
+        ${rewardsData.map(r => `
+          <div class="card-item">
+            <div class="item-info">
+              <div class="item-title">${r.name} (-${r.cost} KB)</div>
+              ${r.note ? `<div class="item-note">${r.note}</div>` : ''}
+            </div>
+            <div>
+              <button class="btn-edit" onclick="editItem('${r.id}', 'reward')">Edit</button>
+              <button class="btn-delete" onclick="deleteItem('${r.id}', 'reward')">Delete</button>
+            </div>
+          </div>
+        `).join('')}
+      `;
+
+      container.innerHTML = formHtml + choresListHtml + rewardsListHtml;
+      toggleFormFields();
+    }
+
+    function toggleFormFields() {
+      const type = document.getElementById('itemType').value;
+      const dailyRow = document.getElementById('dailyCheckRow');
+      if (type === 'reward') {
+        dailyRow.classList.add('hidden');
+      } else {
+        dailyRow.classList.remove('hidden');
+      }
+    }
+
+    function saveItem(e) {
+      e.preventDefault();
+      const type = document.getElementById('itemType').value;
+      const name = document.getElementById('itemName').value;
+      const val = parseInt(document.getElementById('itemVal').value);
+      const note = document.getElementById('itemNote').value;
+      const daily = document.getElementById('itemDaily').checked;
+
+      if (type === 'chore') {
+        let list = [...choresData];
+        if (editingItemId) {
+          const idx = list.findIndex(i => i.id === editingItemId);
+          if (idx !== -1) list[idx] = { id: editingItemId, name, value: val, note, daily };
+        } else {
+          const newId = 'c' + Date.now();
+          list.push({ id: newId, name, value: val, note, daily });
+        }
+        db.ref('settings/chores').set(list);
+      } else {
+        let list = [...rewardsData];
+        if (editingItemId) {
+          const idx = list.findIndex(i => i.id === editingItemId);
+          if (idx !== -1) list[idx] = { id: editingItemId, name, cost: val, note };
+        } else {
+          const newId = 'r' + Date.now();
+          list.push({ id: newId, name, cost: val, note });
+        }
+        db.ref('settings/rewards').set(list);
+      }
+
+      resetManageForm();
+    }
+
+    function editItem(id, type) {
+      editingItemId = id;
+      editingItemType = type;
+      renderManageTab();
+
+      const item = type === 'chore' ? choresData.find(c => c.id === id) : rewardsData.find(r => r.id === id);
+      if (item) {
+        document.getElementById('itemType').value = type;
+        document.getElementById('itemName').value = item.name;
+        document.getElementById('itemVal').value = type === 'chore' ? item.value : item.cost;
+        document.getElementById('itemNote').value = item.note || '';
+        if (type === 'chore') document.getElementById('itemDaily').checked = item.daily;
+        toggleFormFields();
+      }
+    }
+
+    function deleteItem(id, type) {
+      if (!confirm("Are you sure you want to delete this item?")) return;
+      if (type === 'chore') {
+        const list = choresData.filter(c => c.id !== id);
+        db.ref('settings/chores').set(list);
+      } else {
+        const list = rewardsData.filter(r => r.id !== id);
+        db.ref('settings/rewards').set(list);
+      }
+    }
+
+    function resetManageForm() {
+      editingItemId = null;
+      editingItemType = 'chore';
+      renderManageTab();
+    }
+
     function switchTab(tabName, evt) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.getElementById('earnTab').classList.add('hidden');
       document.getElementById('spendTab').classList.add('hidden');
       document.getElementById('historyTab').classList.add('hidden');
+      document.getElementById('manageTab').classList.add('hidden');
 
       if (tabName === 'earn') document.getElementById('earnTab').classList.remove('hidden');
       if (tabName === 'spend') document.getElementById('spendTab').classList.remove('hidden');
       if (tabName === 'history') document.getElementById('historyTab').classList.remove('hidden');
+      if (tabName === 'manage') document.getElementById('manageTab').classList.remove('hidden');
       
       if (evt && evt.target) evt.target.classList.add('active');
     }
