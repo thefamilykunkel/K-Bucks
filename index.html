@@ -644,7 +644,13 @@
       }
 
       historyTab.innerHTML = entries.map(([key, h]) => {
-        const canAddBonus = isParentMode && h.change > 0 && h.choreId && h.choreId !== 'clean_sweep_claimed' && !h.hasBonus;
+        const isPositive = h.change > 0;
+        
+        // Find corresponding chore by matching ID or Title
+        const choreDef = choresData.find(c => (h.choreId && c.id === h.choreId) || c.name === h.title.replace(' (⭐ Without Asking Bonus)', ''));
+        
+        // Show button if Parent Mode, item earned points, isn't clean sweep, hasn't received bonus yet, and bonus is allowed
+        const canAddBonus = isParentMode && isPositive && h.choreId !== 'clean_sweep_claimed' && !h.hasBonus && (!choreDef || choreDef.allowBonus !== false);
 
         return `
           <div class="history-item">
@@ -656,7 +662,7 @@
             </div>
             <div style="display:flex; align-items:center;">
               <div class="${h.change > 0 ? 'val-positive' : 'val-negative'}">${h.change > 0 ? '+' : ''}${h.change} KB</div>
-              ${canAddBonus ? `<button class="btn-retro-bonus" onclick='addRetroactiveBonus("${key}", ${JSON.stringify(h)})'>+⭐ Bonus</button>` : ''}
+              ${canAddBonus ? `<button class="btn-retro-bonus" onclick='addRetroactiveBonus("${key}", ${JSON.stringify(h)})'>+⭐ Add Bonus (+3 KB)</button>` : ''}
               ${isParentMode ? `<button class="undo-btn" onclick="undoTransaction('${key}', ${h.change}, '${h.choreId || ''}')">Erase</button>` : ''}
             </div>
           </div>
