@@ -100,6 +100,22 @@
     .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
     
     .list-container { display: flex; flex-direction: column; gap: 8px; padding-bottom: 24px; }
+    
+    /* Clean Sweep Dynamic Banner */
+    .clean-sweep-banner {
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      color: white;
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+      animation: pulse 2s infinite;
+    }
+    .clean-sweep-title { font-weight: 800; font-size: 0.95rem; }
+    .clean-sweep-sub { font-size: 0.75rem; opacity: 0.9; }
+
     .card-item {
       background: var(--card-bg); border-radius: 12px; padding: 12px 14px;
       display: flex; justify-content: space-between; align-items: center;
@@ -109,11 +125,19 @@
     .item-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 2px; }
     .item-note { font-size: 0.75rem; color: var(--text-muted); font-style: italic; }
     
+    .action-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
     .action-btn {
-      padding: 8px 14px; border: none; border-radius: 8px; font-weight: bold;
+      padding: 8px 12px; border: none; border-radius: 8px; font-weight: bold;
       cursor: pointer; white-space: nowrap; font-size: 0.85rem;
     }
     .btn-earn { background: var(--success-light); color: #065F46; }
+    .btn-bonus { background: #FEF3C7; color: #92400E; padding: 4px 8px; font-size: 0.7rem; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
     .btn-spend { background: var(--warning-light); color: #92400E; }
     .btn-disabled { background: #E5E7EB !important; color: #9CA3AF !important; cursor: not-allowed !important; }
 
@@ -200,6 +224,7 @@
     // SEPARATE PARENT PINS
     const MOM_PIN = "1348";
     const DAD_PIN = "1728";
+    const WITHOUT_ASKING_BONUS = 3;
 
     const defaultChoresData = [
       { id: "c1", name: "Make your bed", value: 2, note: "Every morning", daily: true },
@@ -209,14 +234,12 @@
       { id: "c5", name: "Unload Dishwasher", value: 2, note: "", daily: false },
       { id: "c6", name: "Put dirty laundry in hamper", value: 2, note: "Not the floor! Once a day", daily: true },
       { id: "c7", name: "Change to PJs, RR, Brush teeth, without help", value: 5, note: "Once a day", daily: true },
-      { id: "c8", name: "Chore done without asking", value: 3, note: "PER CHORE without asking", daily: false },
       { id: "c9", name: "Fold clean clothes & put away", value: 10, note: "In drawers/closet", daily: false },
       { id: "c10", name: "Let sibling pick show", value: 5, note: "Per day", daily: true },
       { id: "c11", name: "Let sibling unlock door", value: 5, note: "Per day", daily: true },
       { id: "c12", name: "Open door for family/stranger at a place", value: 5, note: "Per day", daily: true },
       { id: "c13", name: "Do something kind for family", value: 5, note: "", daily: false },
-      { id: "c14", name: "Bring in trash can", value: 5, note: "", daily: false },
-      { id: "c15", name: "Full 'clean sweep' day", value: 10, note: "All chores done, no reminders", daily: true }
+      { id: "c14", name: "Bring in trash can", value: 5, note: "", daily: false }
     ];
 
     const defaultRewardsData = [
@@ -337,7 +360,7 @@
       initCloudSync();
     }
 
-    function earn(choreId, title, amount, isDaily) {
+    function earn(choreId, title, baseAmount, isDaily, withBonus = false) {
       if (!isParentMode) return;
       const today = getTodayString();
       if (isDaily && completedDailyChores[choreId] === today) {
@@ -345,7 +368,10 @@
         return;
       }
 
-      const newBal = currentBalance + amount;
+      const totalEarned = baseAmount + (withBonus ? WITHOUT_ASKING_BONUS : 0);
+      const displayTitle = withBonus ? `${title} (⭐ Without Asking Bonus)` : title;
+
+      const newBal = currentBalance + totalEarned;
       const historyRef = db.ref(`kids/${currentKid}/history`).push();
       
       const updates = { balance: newBal };
@@ -356,7 +382,32 @@
       db.ref(`kids/${currentKid}`).update(updates);
       historyRef.set({
         choreId: choreId || null,
-        title,
+        title: displayTitle,
+        change: totalEarned,
+        approvedBy: activeParent,
+        date: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+      });
+    }
+
+    function earnCleanSweep(amount, isWithoutAsking) {
+      if (!isParentMode) return;
+      const today = getTodayString();
+      if (completedDailyChores['clean_sweep_claimed'] === today) {
+        alert("Clean Sweep bonus already claimed today!");
+        return;
+      }
+
+      const title = isWithoutAsking ? "Full 'Clean Sweep' Day (⭐ Without Asking)" : "Full 'Clean Sweep' Day";
+      const newBal = currentBalance + amount;
+      const historyRef = db.ref(`kids/${currentKid}/history`).push();
+
+      const updates = { balance: newBal };
+      updates[`dailyChores/clean_sweep_claimed`] = today;
+
+      db.ref(`kids/${currentKid}`).update(updates);
+      historyRef.set({
+        choreId: 'clean_sweep_claimed',
+        title: title,
         change: amount,
         approvedBy: activeParent,
         date: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -402,7 +453,45 @@
 
     function renderChores() {
       const today = getTodayString();
-      document.getElementById('earnTab').innerHTML = choresData.map(c => {
+      
+      // Calculate Clean Sweep completion
+      const dailyChores = choresData.filter(c => c.daily);
+      const allDailyDone = dailyChores.length > 0 && dailyChores.every(c => completedDailyChores[c.id] === today);
+      const cleanSweepClaimed = completedDailyChores['clean_sweep_claimed'] === today;
+
+      let cleanSweepBannerHtml = '';
+
+      if (allDailyDone) {
+        if (cleanSweepClaimed) {
+          cleanSweepBannerHtml = `
+            <div class="clean-sweep-banner" style="background: #10B981;">
+              <div>
+                <div class="clean-sweep-title">🧹 Clean Sweep Complete!</div>
+                <div class="clean-sweep-sub">All daily chores finished & bonus claimed for today.</div>
+              </div>
+            </div>
+          `;
+        } else {
+          cleanSweepBannerHtml = `
+            <div class="clean-sweep-banner">
+              <div>
+                <div class="clean-sweep-title">⭐ Clean Sweep Unlocked!</div>
+                <div class="clean-sweep-sub">All daily chores finished today!</div>
+              </div>
+              <div>
+                ${isParentMode ? `
+                  <div class="action-group">
+                    <button class="action-btn btn-earn" style="background: white; color: #D97706;" onclick="earnCleanSweep(5, false)">+5 KB</button>
+                    <button class="btn-bonus" style="background: #FEF3C7; color: #92400E;" onclick="earnCleanSweep(10, true)">+10 KB (No Ask)</button>
+                  </div>
+                ` : `<span style="font-size:0.8rem; font-weight:bold;">+5 / +10 KB</span>`}
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      const choresCardsHtml = choresData.map(c => {
         const isDoneToday = c.daily && (completedDailyChores[c.id] === today);
         let btnHtml = '';
 
@@ -411,7 +500,13 @@
         } else if (isDoneToday) {
           btnHtml = `<button class="action-btn btn-disabled" disabled>✓ Done Today</button>`;
         } else {
-          btnHtml = `<button class="action-btn btn-earn" onclick="earn('${c.id}', '${c.name.replace(/'/g, "\\'")}', ${c.value}, ${c.daily})">+${c.value} KB</button>`;
+          const escapedName = c.name.replace(/'/g, "\\'");
+          btnHtml = `
+            <div class="action-group">
+              <button class="action-btn btn-earn" onclick="earn('${c.id}', '${escapedName}', ${c.value}, ${c.daily}, false)">+${c.value} KB</button>
+              <button class="btn-bonus" onclick="earn('${c.id}', '${escapedName}', ${c.value}, ${c.daily}, true)">+⭐ ${c.value + WITHOUT_ASKING_BONUS} KB (No Ask)</button>
+            </div>
+          `;
         }
 
         return `
@@ -424,6 +519,8 @@
           </div>
         `;
       }).join('');
+
+      document.getElementById('earnTab').innerHTML = cleanSweepBannerHtml + choresCardsHtml;
     }
 
     function renderRewards() {
