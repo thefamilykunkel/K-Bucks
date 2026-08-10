@@ -111,7 +111,6 @@
       justify-content: space-between;
       align-items: center;
       box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
-      animation: pulse 2s infinite;
     }
     .clean-sweep-title { font-weight: 800; font-size: 0.95rem; }
     .clean-sweep-sub { font-size: 0.75rem; opacity: 0.9; }
@@ -166,6 +165,10 @@
       padding: 8px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.85rem; width: 100%;
     }
     .form-row { display: flex; gap: 8px; }
+    .checkbox-group { display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; margin-top: 4px; }
+    .checkbox-item { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .checkbox-item input { width: auto; cursor: pointer; }
+    
     .btn-save { background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
     .btn-cancel { background: #E5E7EB; color: var(--text); border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
@@ -227,19 +230,19 @@
     const WITHOUT_ASKING_BONUS = 3;
 
     const defaultChoresData = [
-      { id: "c1", name: "Make your bed", value: 2, note: "Every morning", daily: true },
-      { id: "c2", name: "Tidy your room", value: 2, note: "Before bed, once a day", daily: true },
-      { id: "c3", name: "Pick up toys around the house daily", value: 2, note: "Before bed ONLY, once a day", daily: true },
-      { id: "c4", name: "Dishes in sink", value: 2, note: "Once a day", daily: true },
-      { id: "c5", name: "Unload Dishwasher", value: 2, note: "", daily: false },
-      { id: "c6", name: "Put dirty laundry in hamper", value: 2, note: "Not the floor! Once a day", daily: true },
-      { id: "c7", name: "Change to PJs, RR, Brush teeth, without help", value: 5, note: "Once a day", daily: true },
-      { id: "c9", name: "Fold clean clothes & put away", value: 10, note: "In drawers/closet", daily: false },
-      { id: "c10", name: "Let sibling pick show", value: 5, note: "Per day", daily: true },
-      { id: "c11", name: "Let sibling unlock door", value: 5, note: "Per day", daily: true },
-      { id: "c12", name: "Open door for family/stranger at a place", value: 5, note: "Per day", daily: true },
-      { id: "c13", name: "Do something kind for family", value: 5, note: "", daily: false },
-      { id: "c14", name: "Bring in trash can", value: 5, note: "", daily: false }
+      { id: "c1", name: "Make your bed", value: 2, note: "Every morning", daily: true, oncePerDay: true, allowBonus: true },
+      { id: "c2", name: "Tidy your room", value: 2, note: "Before bed, once a day", daily: true, oncePerDay: true, allowBonus: true },
+      { id: "c3", name: "Pick up toys around the house daily", value: 2, note: "Before bed ONLY, once a day", daily: true, oncePerDay: true, allowBonus: true },
+      { id: "c4", name: "Dishes in sink", value: 2, note: "Once a day", daily: true, oncePerDay: true, allowBonus: true },
+      { id: "c5", name: "Unload Dishwasher", value: 2, note: "", daily: false, oncePerDay: false, allowBonus: false },
+      { id: "c6", name: "Put dirty laundry in hamper", value: 2, note: "Not the floor! Once a day", daily: true, oncePerDay: true, allowBonus: true },
+      { id: "c7", name: "Change to PJs, RR, Brush teeth, without help", value: 5, note: "Once a day", daily: true, oncePerDay: true, allowBonus: true },
+      { id: "c9", name: "Fold clean clothes & put away", value: 10, note: "In drawers/closet", daily: false, oncePerDay: false, allowBonus: false },
+      { id: "c10", name: "Let sibling pick show", value: 5, note: "Per day", daily: false, oncePerDay: true, allowBonus: false },
+      { id: "c11", name: "Let sibling unlock door", value: 5, note: "Per day", daily: false, oncePerDay: true, allowBonus: false },
+      { id: "c12", name: "Open door for family/stranger at a place", value: 5, note: "Per day", daily: false, oncePerDay: true, allowBonus: false },
+      { id: "c13", name: "Do something kind for family", value: 5, note: "", daily: false, oncePerDay: false, allowBonus: false },
+      { id: "c14", name: "Bring in trash can", value: 5, note: "", daily: false, oncePerDay: true, allowBonus: false }
     ];
 
     const defaultRewardsData = [
@@ -318,7 +321,6 @@
       renderProfiles();
       updateBalanceLabel();
 
-      // Sync Chores & Rewards List from Cloud
       db.ref('settings').on('value', snapshot => {
         const settings = snapshot.val() || {};
         if (!settings.chores) {
@@ -340,7 +342,6 @@
         renderManageTab();
       });
 
-      // Sync Kid Data
       db.ref(`kids/${currentKid}`).on('value', snapshot => {
         const data = snapshot.val() || { balance: 0, history: {}, dailyChores: {} };
         currentBalance = data.balance || 0;
@@ -360,10 +361,10 @@
       initCloudSync();
     }
 
-    function earn(choreId, title, baseAmount, isDaily, withBonus = false) {
+    function earn(choreId, title, baseAmount, isOncePerDay, withBonus = false) {
       if (!isParentMode) return;
       const today = getTodayString();
-      if (isDaily && completedDailyChores[choreId] === today) {
+      if (isOncePerDay && completedDailyChores[choreId] === today) {
         alert("This chore was already done today!");
         return;
       }
@@ -375,7 +376,7 @@
       const historyRef = db.ref(`kids/${currentKid}/history`).push();
       
       const updates = { balance: newBal };
-      if (isDaily) {
+      if (isOncePerDay) {
         updates[`dailyChores/${choreId}`] = today;
       }
 
@@ -454,9 +455,9 @@
     function renderChores() {
       const today = getTodayString();
       
-      // Calculate Clean Sweep completion
-      const dailyChores = choresData.filter(c => c.daily);
-      const allDailyDone = dailyChores.length > 0 && dailyChores.every(c => completedDailyChores[c.id] === today);
+      // Calculate Clean Sweep completion (only chores with daily: true)
+      const regularDailyChores = choresData.filter(c => c.daily);
+      const allDailyDone = regularDailyChores.length > 0 && regularDailyChores.every(c => completedDailyChores[c.id] === today);
       const cleanSweepClaimed = completedDailyChores['clean_sweep_claimed'] === today;
 
       let cleanSweepBannerHtml = '';
@@ -492,7 +493,7 @@
       }
 
       const choresCardsHtml = choresData.map(c => {
-        const isDoneToday = c.daily && (completedDailyChores[c.id] === today);
+        const isDoneToday = c.oncePerDay && (completedDailyChores[c.id] === today);
         let btnHtml = '';
 
         if (!isParentMode) {
@@ -503,8 +504,10 @@
           const escapedName = c.name.replace(/'/g, "\\'");
           btnHtml = `
             <div class="action-group">
-              <button class="action-btn btn-earn" onclick="earn('${c.id}', '${escapedName}', ${c.value}, ${c.daily}, false)">+${c.value} KB</button>
-              <button class="btn-bonus" onclick="earn('${c.id}', '${escapedName}', ${c.value}, ${c.daily}, true)">+⭐ ${c.value + WITHOUT_ASKING_BONUS} KB (No Ask)</button>
+              <button class="action-btn btn-earn" onclick="earn('${c.id}', '${escapedName}', ${c.value}, ${!!c.oncePerDay}, false)">+${c.value} KB</button>
+              ${c.allowBonus !== false ? `
+                <button class="btn-bonus" onclick="earn('${c.id}', '${escapedName}', ${c.value}, ${!!c.oncePerDay}, true)">+⭐ ${c.value + WITHOUT_ASKING_BONUS} KB (No Ask)</button>
+              ` : ''}
             </div>
           `;
         }
@@ -590,12 +593,23 @@
           </div>
           <input type="text" id="itemName" placeholder="Item Name" required />
           <input type="text" id="itemNote" placeholder="Note / Description (Optional)" />
-          <div class="form-row" id="dailyCheckRow">
-            <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
-              <input type="checkbox" id="itemDaily" style="width: auto;" /> Once per day limit?
+          
+          <div class="checkbox-group" id="choreCheckboxes">
+            <label class="checkbox-item">
+              <input type="checkbox" id="itemDaily" />
+              <span>Regular Daily Chore (Required for Clean Sweep)</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="itemOncePerDay" />
+              <span>Allowed Once Per Day</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="itemAllowBonus" checked />
+              <span>Eligible for "Without Asking" Bonus (+3 KB)</span>
             </label>
           </div>
-          <div class="form-row">
+
+          <div class="form-row" style="margin-top: 8px;">
             <button type="submit" class="btn-save">${editingItemId ? 'Update' : 'Add Item'}</button>
             ${editingItemId ? `<button type="button" class="btn-cancel" onclick="resetManageForm()">Cancel</button>` : ''}
           </div>
@@ -604,18 +618,26 @@
 
       let choresListHtml = `
         <h4 style="margin: 8px 0 4px 0; color: var(--primary);">Current Chores</h4>
-        ${choresData.map(c => `
-          <div class="card-item">
-            <div class="item-info">
-              <div class="item-title">${c.name} (+${c.value} KB)</div>
-              <div class="item-note">${c.note ? c.note + ' • ' : ''}${c.daily ? 'Daily' : 'Multiple per day'}</div>
+        ${choresData.map(c => {
+          let tags = [];
+          if (c.daily) tags.push("Clean Sweep Required");
+          if (c.oncePerDay) tags.push("Once Daily Limit");
+          if (c.allowBonus !== false) tags.push("Bonus Allowed");
+          const tagStr = tags.length ? tags.join(" • ") : "Reusable Chore";
+
+          return `
+            <div class="card-item">
+              <div class="item-info">
+                <div class="item-title">${c.name} (+${c.value} KB)</div>
+                <div class="item-note">${c.note ? c.note + ' • ' : ''}${tagStr}</div>
+              </div>
+              <div>
+                <button class="btn-edit" onclick="editItem('${c.id}', 'chore')">Edit</button>
+                <button class="btn-delete" onclick="deleteItem('${c.id}', 'chore')">Delete</button>
+              </div>
             </div>
-            <div>
-              <button class="btn-edit" onclick="editItem('${c.id}', 'chore')">Edit</button>
-              <button class="btn-delete" onclick="deleteItem('${c.id}', 'chore')">Delete</button>
-            </div>
-          </div>
-        `).join('')}
+          `;
+        }).join('')}
       `;
 
       let rewardsListHtml = `
@@ -640,11 +662,11 @@
 
     function toggleFormFields() {
       const type = document.getElementById('itemType').value;
-      const dailyRow = document.getElementById('dailyCheckRow');
+      const choreCheckboxes = document.getElementById('choreCheckboxes');
       if (type === 'reward') {
-        dailyRow.classList.add('hidden');
+        choreCheckboxes.classList.add('hidden');
       } else {
-        dailyRow.classList.remove('hidden');
+        choreCheckboxes.classList.remove('hidden');
       }
     }
 
@@ -654,16 +676,19 @@
       const name = document.getElementById('itemName').value;
       const val = parseInt(document.getElementById('itemVal').value);
       const note = document.getElementById('itemNote').value;
-      const daily = document.getElementById('itemDaily').checked;
 
       if (type === 'chore') {
+        const daily = document.getElementById('itemDaily').checked;
+        const oncePerDay = document.getElementById('itemOncePerDay').checked;
+        const allowBonus = document.getElementById('itemAllowBonus').checked;
+
         let list = [...choresData];
         if (editingItemId) {
           const idx = list.findIndex(i => i.id === editingItemId);
-          if (idx !== -1) list[idx] = { id: editingItemId, name, value: val, note, daily };
+          if (idx !== -1) list[idx] = { id: editingItemId, name, value: val, note, daily, oncePerDay, allowBonus };
         } else {
           const newId = 'c' + Date.now();
-          list.push({ id: newId, name, value: val, note, daily });
+          list.push({ id: newId, name, value: val, note, daily, oncePerDay, allowBonus });
         }
         db.ref('settings/chores').set(list);
       } else {
@@ -692,7 +717,11 @@
         document.getElementById('itemName').value = item.name;
         document.getElementById('itemVal').value = type === 'chore' ? item.value : item.cost;
         document.getElementById('itemNote').value = item.note || '';
-        if (type === 'chore') document.getElementById('itemDaily').checked = item.daily;
+        if (type === 'chore') {
+          document.getElementById('itemDaily').checked = !!item.daily;
+          document.getElementById('itemOncePerDay').checked = !!item.oncePerDay;
+          document.getElementById('itemAllowBonus').checked = item.allowBonus !== false;
+        }
         toggleFormFields();
       }
     }
