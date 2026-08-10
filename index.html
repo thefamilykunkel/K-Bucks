@@ -28,8 +28,8 @@
       top: 0;
       z-index: 1000;
       background-color: var(--gray-bg);
-      padding-top: 8px;
-      padding-bottom: 8px;
+      padding-top: 4px;
+      padding-bottom: 4px;
     }
 
     header { text-align: center; margin-bottom: 8px; position: relative; }
@@ -41,7 +41,7 @@
       justify-content: space-between;
       align-items: center;
       gap: 6px;
-      margin-bottom: 10px;
+      margin-bottom: 4px;
     }
 
     .status-banner {
@@ -86,15 +86,15 @@
     
     .balance-card {
       background: linear-gradient(135deg, #6366F1, #4F46E5); color: white;
-      padding: 14px; border-radius: 16px; text-align: center; margin-bottom: 10px;
+      padding: 6px; border-radius: 16px; text-align: center; margin-bottom: 4px;
       box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
     }
     .balance-amount { font-size: 2.8rem; font-weight: 800; line-height: 1.1; }
     .balance-label { text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem; opacity: 0.95; font-weight: 700; }
     
-    .tabs { display: flex; gap: 8px; margin-bottom: 10px; border-bottom: 2px solid #E5E7EB; background: var(--gray-bg); }
+    .tabs { display: flex; gap: 8px; margin-bottom: 4px; border-bottom: 2px solid #E5E7EB; background: var(--gray-bg); }
     .tab-btn {
-      flex: 1; padding: 8px; border: none; background: none; font-weight: 600;
+      flex: 1; padding: 4px; border: none; background: none; font-weight: 600;
       font-size: 0.9rem; color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent;
     }
     .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
@@ -182,8 +182,8 @@
     const db = firebase.database();
 
     // SEPARATE PARENT PINS
-    const MOM_PIN = "1111";
-    const DAD_PIN = "2222";
+    const MOM_PIN = "1348";
+    const DAD_PIN = "1728";
 
     const choresData = [
       { id: "c1", name: "Make your bed", value: 2, note: "Every morning", daily: true },
