@@ -140,6 +140,19 @@
     .btn-spend { background: var(--warning-light); color: #92400E; }
     .btn-disabled { background: #E5E7EB !important; color: #9CA3AF !important; cursor: not-allowed !important; }
 
+    /* Point Breakdown Pill */
+    .point-breakdown-pill {
+      display: inline-block;
+      background: #EEF2FF;
+      color: #3730A3;
+      border: 1px solid #C7D2FE;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 10px;
+      margin-top: 3px;
+    }
+
     .history-item {
       display: flex; justify-content: space-between; align-items: center; padding: 10px 12px;
       background: white; border-radius: 8px; margin-bottom: 6px;
@@ -149,11 +162,12 @@
     .val-positive { color: #10B981; font-weight: bold; }
     .val-negative { color: var(--danger); font-weight: bold; }
     
-    .undo-btn, .btn-edit, .btn-delete {
+    .undo-btn, .btn-edit, .btn-delete, .btn-retro-bonus {
       border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; cursor: pointer; margin-left: 4px;
     }
     .undo-btn, .btn-delete { background: #FEE2E2; color: #991B1B; }
     .btn-edit { background: #E0E7FF; color: var(--primary); }
+    .btn-retro-bonus { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
 
     /* Sticky Manage Form Styles */
     .sticky-manage-form {
@@ -359,6 +373,7 @@
         rawHistoryData = data.history || {};
         document.getElementById('balanceDisplay').innerText = currentBalance;
         
+        checkAndAwardCleanSweep();
         renderHistory(rawHistoryData);
         renderChores();
         renderRewards();
@@ -395,6 +410,8 @@
         choreId: choreId || null,
         title: displayTitle,
         change: totalEarned,
+        baseValue: baseAmount,
+        hasBonus: withBonus,
         approvedBy: activeParent,
         date: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
       });
@@ -423,6 +440,60 @@
         approvedBy: activeParent,
         date: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
       });
+    }
+
+    function addRetroactiveBonus(key, currentHistoryItem) {
+      if (!isParentMode) return;
+      if (currentHistoryItem.hasBonus) {
+        alert("This item already has a bonus applied!");
+        return;
+      }
+
+      const updatedTitle = `${currentHistoryItem.title.replace(' (⭐ Without Asking Bonus)', '')} (⭐ Without Asking Bonus)`;
+      const newChange = (currentHistoryItem.change || 0) + WITHOUT_ASKING_BONUS;
+      const newBal = currentBalance + WITHOUT_ASKING_BONUS;
+
+      const updates = {};
+      updates[`kids/${currentKid}/balance`] = newBal;
+      updates[`kids/${currentKid}/history/${key}/title`] = updatedTitle;
+      updates[`kids/${currentKid}/history/${key}/change`] = newChange;
+      updates[`kids/${currentKid}/history/${key}/hasBonus`] = true;
+
+      db.ref().update(updates);
+    }
+
+    function checkAndAwardCleanSweep() {
+      const today = getTodayString();
+      const regularDailyChores = choresData.filter(c => c.daily);
+      if (regularDailyChores.length === 0) return;
+
+      const allDailyDone = regularDailyChores.every(c => completedDailyChores[c.id] === today);
+      const cleanSweepClaimed = completedDailyChores['clean_sweep_claimed'] === today;
+
+      if (allDailyDone && !cleanSweepClaimed) {
+        const todayEntries = Object.values(rawHistoryData || {}).filter(h => h.date && h.date.includes(new Date().toLocaleString('en-US', { month: 'short', day: 'numeric' })));
+        const dailyChoreHistory = todayEntries.filter(h => regularDailyChores.some(c => c.id === h.choreId));
+        const allDoneWithoutAsking = dailyChoreHistory.length >= regularDailyChores.length && dailyChoreHistory.every(h => h.hasBonus);
+
+        const sweepBonus = allDoneWithoutAsking ? 10 : 5;
+        const sweepTitle = allDoneWithoutAsking ? "Full 'Clean Sweep' Day (⭐ Without Asking)" : "Full 'Clean Sweep' Day";
+
+        const newBal = currentBalance + sweepBonus;
+        const historyRef = db.ref(`kids/${currentKid}/history`).push();
+
+        const updates = {};
+        updates[`kids/${currentKid}/balance`] = newBal;
+        updates[`kids/${currentKid}/dailyChores/clean_sweep_claimed`] = today;
+
+        db.ref().update(updates);
+        historyRef.set({
+          choreId: 'clean_sweep_claimed',
+          title: sweepTitle,
+          change: sweepBonus,
+          approvedBy: "System (Auto)",
+          date: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+        });
+      }
     }
 
     function spend(title, amount) {
@@ -521,11 +592,16 @@
           `;
         }
 
+        const breakdownPill = (c.allowBonus !== false) 
+          ? `<div class="point-breakdown-pill">Base: ${c.value} KB | Bonus: +${WITHOUT_ASKING_BONUS} KB</div>` 
+          : `<div class="point-breakdown-pill">Base: ${c.value} KB</div>`;
+
         return `
           <div class="card-item">
             <div class="item-info">
               <div class="item-title">${c.name}</div>
               ${c.note ? `<div class="item-note">${c.note}</div>` : ''}
+              ${breakdownPill}
             </div>
             ${btnHtml}
           </div>
@@ -567,20 +643,25 @@
         return;
       }
 
-      historyTab.innerHTML = entries.map(([key, h]) => `
-        <div class="history-item">
-          <div>
-            <div style="font-weight:600;">${h.title}</div>
-            <div style="font-size:0.75rem; color: var(--text-muted);">
-              ${h.date} ${h.approvedBy ? `• <span class="history-by">By ${h.approvedBy}</span>` : ''}
+      historyTab.innerHTML = entries.map(([key, h]) => {
+        const canAddBonus = isParentMode && h.change > 0 && h.choreId && h.choreId !== 'clean_sweep_claimed' && !h.hasBonus;
+
+        return `
+          <div class="history-item">
+            <div>
+              <div style="font-weight:600;">${h.title}</div>
+              <div style="font-size:0.75rem; color: var(--text-muted);">
+                ${h.date} ${h.approvedBy ? `• <span class="history-by">By ${h.approvedBy}</span>` : ''}
+              </div>
+            </div>
+            <div style="display:flex; align-items:center;">
+              <div class="${h.change > 0 ? 'val-positive' : 'val-negative'}">${h.change > 0 ? '+' : ''}${h.change} KB</div>
+              ${canAddBonus ? `<button class="btn-retro-bonus" onclick='addRetroactiveBonus("${key}", ${JSON.stringify(h)})'>+⭐ Bonus</button>` : ''}
+              ${isParentMode ? `<button class="undo-btn" onclick="undoTransaction('${key}', ${h.change}, '${h.choreId || ''}')">Erase</button>` : ''}
             </div>
           </div>
-          <div style="display:flex; align-items:center;">
-            <div class="${h.change > 0 ? 'val-positive' : 'val-negative'}">${h.change > 0 ? '+' : ''}${h.change} KB</div>
-            ${isParentMode ? `<button class="undo-btn" onclick="undoTransaction('${key}', ${h.change}, '${h.choreId || ''}')">Erase</button>` : ''}
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     /* --- STICKY MANAGE TAB IMPLEMENTATION --- */
