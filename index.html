@@ -162,12 +162,13 @@
     .val-positive { color: #10B981; font-weight: bold; }
     .val-negative { color: var(--danger); font-weight: bold; }
     
-    .undo-btn, .btn-edit, .btn-delete, .btn-retro-bonus {
+    .undo-btn, .btn-edit, .btn-delete, .btn-retro-bonus, .btn-retro-remove {
       border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; cursor: pointer; margin-left: 4px;
     }
     .undo-btn, .btn-delete { background: #FEE2E2; color: #991B1B; }
     .btn-edit { background: #E0E7FF; color: var(--primary); }
     .btn-retro-bonus { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
+    .btn-retro-remove { background: #FED7AA; color: #9A3412; border: 1px solid #FDBA74; }
 
     /* Sticky Manage Form Styles */
     .sticky-manage-form {
@@ -462,6 +463,26 @@
       db.ref().update(updates);
     }
 
+    function removeRetroactiveBonus(key, currentHistoryItem) {
+      if (!isParentMode) return;
+      if (!currentHistoryItem.hasBonus) {
+        alert("This item does not have a bonus to remove!");
+        return;
+      }
+
+      const updatedTitle = currentHistoryItem.title.replace(' (⭐ Without Asking Bonus)', '');
+      const newChange = Math.max(0, (currentHistoryItem.change || 0) - WITHOUT_ASKING_BONUS);
+      const newBal = Math.max(0, currentBalance - WITHOUT_ASKING_BONUS);
+
+      const updates = {};
+      updates[`kids/${currentKid}/balance`] = newBal;
+      updates[`kids/${currentKid}/history/${key}/title`] = updatedTitle;
+      updates[`kids/${currentKid}/history/${key}/change`] = newChange;
+      updates[`kids/${currentKid}/history/${key}/hasBonus`] = false;
+
+      db.ref().update(updates);
+    }
+
     function checkAndAwardCleanSweep() {
       const today = getTodayString();
       const regularDailyChores = choresData.filter(c => c.daily);
@@ -649,8 +670,16 @@
         // Find corresponding chore by matching ID or Title
         const choreDef = choresData.find(c => (h.choreId && c.id === h.choreId) || c.name === h.title.replace(' (⭐ Without Asking Bonus)', ''));
         
-        // Show button if Parent Mode, item earned points, isn't clean sweep, hasn't received bonus yet, and bonus is allowed
+        // Conditions for adding or removing bonuses retroactively
         const canAddBonus = isParentMode && isPositive && h.choreId !== 'clean_sweep_claimed' && !h.hasBonus && (!choreDef || choreDef.allowBonus !== false);
+        const canRemoveBonus = isParentMode && isPositive && h.choreId !== 'clean_sweep_claimed' && h.hasBonus;
+
+        let bonusBtnHtml = '';
+        if (canAddBonus) {
+          bonusBtnHtml = `<button class="btn-retro-bonus" onclick='addRetroactiveBonus("${key}", ${JSON.stringify(h)})'>+⭐ Add Bonus (+3 KB)</button>`;
+        } else if (canRemoveBonus) {
+          bonusBtnHtml = `<button class="btn-retro-remove" onclick='removeRetroactiveBonus("${key}", ${JSON.stringify(h)})'>-⭐ Remove Bonus (-3 KB)</button>`;
+        }
 
         return `
           <div class="history-item">
@@ -662,7 +691,7 @@
             </div>
             <div style="display:flex; align-items:center;">
               <div class="${h.change > 0 ? 'val-positive' : 'val-negative'}">${h.change > 0 ? '+' : ''}${h.change} KB</div>
-              ${canAddBonus ? `<button class="btn-retro-bonus" onclick='addRetroactiveBonus("${key}", ${JSON.stringify(h)})'>+⭐ Add Bonus (+3 KB)</button>` : ''}
+              ${bonusBtnHtml}
               ${isParentMode ? `<button class="undo-btn" onclick="undoTransaction('${key}', ${h.change}, '${h.choreId || ''}')">Erase</button>` : ''}
             </div>
           </div>
