@@ -521,22 +521,20 @@
       const cleanSweepClaimed = completedDailyChores['clean_sweep_claimed'] === today;
 
       if (allDailyDone && !cleanSweepClaimed) {
-        const todayFormatted = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric' });
-        const todayEntries = Object.values(rawHistoryData || {}).filter(h => h.date && h.date.includes(todayFormatted));
-        
-        // Map history to specific required daily chores
-        const dailyChoreHistoryMap = {};
-        regularDailyChores.forEach(c => {
-          const entry = todayEntries.find(h => h.choreId === c.id);
-          if (entry) {
-            dailyChoreHistoryMap[c.id] = entry;
-          }
+        // Collect all entries created today safely using standard Date parsing
+        const todayNow = new Date();
+        const todayEntries = Object.values(rawHistoryData || {}).filter(h => {
+          if (!h.date) return false;
+          const entryDate = new Date(h.date);
+          return entryDate.getFullYear() === todayNow.getFullYear() &&
+                 entryDate.getMonth() === todayNow.getMonth() &&
+                 entryDate.getDate() === todayNow.getDate();
         });
 
-        // Verify every required daily chore exists in today's history AND has the bonus applied
+        // Verify every required daily chore has at least one entry today with hasBonus === true
         const allDoneWithoutAsking = regularDailyChores.every(c => {
-          const historyEntry = dailyChoreHistoryMap[c.id];
-          return historyEntry && historyEntry.hasBonus === true;
+          const choreEntries = todayEntries.filter(h => h.choreId === c.id);
+          return choreEntries.some(h => h.hasBonus === true);
         });
 
         const sweepBonus = allDoneWithoutAsking ? 10 : 5;
