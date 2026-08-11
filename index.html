@@ -119,7 +119,13 @@
       background: var(--card-bg); border-radius: 12px; padding: 12px 14px;
       display: flex; justify-content: space-between; align-items: center;
       box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      transition: all 0.2s ease;
     }
+    .card-item.affordable-card {
+      background: #F0FDF4;
+      border: 1px solid #BBF7D0;
+    }
+
     .item-info { flex: 1; padding-right: 12px; }
     .item-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 2px; }
     .item-note { font-size: 0.75rem; color: var(--text-muted); font-style: italic; }
@@ -139,6 +145,29 @@
     .btn-bonus { background: #FEF3C7; color: #92400E; padding: 4px 8px; font-size: 0.7rem; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
     .btn-spend { background: var(--warning-light); color: #92400E; }
     .btn-disabled { background: #E5E7EB !important; color: #9CA3AF !important; cursor: not-allowed !important; }
+
+    /* Kid View Reward Highlights */
+    .btn-kid-affordable {
+      background: #10B981 !important;
+      color: white !important;
+      font-weight: 800 !important;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+    .btn-kid-locked {
+      background: #E5E7EB !important;
+      color: #6B7280 !important;
+      border: 1px solid #D1D5DB;
+    }
+    .needed-badge {
+      font-size: 0.7rem;
+      color: #DC2626;
+      font-weight: 700;
+      background: #FEE2E2;
+      padding: 2px 6px;
+      border-radius: 6px;
+      margin-top: 2px;
+      white-space: nowrap;
+    }
 
     /* Point Breakdown Pill */
     .point-breakdown-pill {
@@ -635,16 +664,34 @@
     function renderRewards() {
       document.getElementById('spendTab').innerHTML = rewardsData.map(r => {
         let btnHtml = '';
+        let cardClass = '';
+
+        const canAfford = currentBalance >= r.cost;
 
         if (!isParentMode) {
-          btnHtml = `<span style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">${r.cost} KB</span>`;
+          if (canAfford) {
+            cardClass = 'affordable-card';
+            btnHtml = `
+              <div class="action-group">
+                <button class="action-btn btn-kid-affordable">✨ Unlock (${r.cost} KB)</button>
+              </div>
+            `;
+          } else {
+            const needed = r.cost - currentBalance;
+            btnHtml = `
+              <div class="action-group">
+                <button class="action-btn btn-kid-locked">${r.cost} KB</button>
+                <div class="needed-badge">Need ${needed} more KB</div>
+              </div>
+            `;
+          }
         } else {
-          const disabled = currentBalance < r.cost;
+          const disabled = !canAfford;
           btnHtml = `<button class="action-btn btn-spend ${disabled ? 'btn-disabled' : ''}" ${disabled ? 'disabled' : ''} onclick="spend('${r.name.replace(/'/g, "\\'")}', ${r.cost})">-${r.cost} KB</button>`;
         }
 
         return `
-          <div class="card-item">
+          <div class="card-item ${cardClass}">
             <div class="item-info">
               <div class="item-title">${r.name}</div>
               ${r.note ? `<div class="item-note">${r.note}</div>` : ''}
