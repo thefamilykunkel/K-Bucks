@@ -521,9 +521,23 @@
       const cleanSweepClaimed = completedDailyChores['clean_sweep_claimed'] === today;
 
       if (allDailyDone && !cleanSweepClaimed) {
-        const todayEntries = Object.values(rawHistoryData || {}).filter(h => h.date && h.date.includes(new Date().toLocaleString('en-US', { month: 'short', day: 'numeric' })));
-        const dailyChoreHistory = todayEntries.filter(h => regularDailyChores.some(c => c.id === h.choreId));
-        const allDoneWithoutAsking = dailyChoreHistory.length >= regularDailyChores.length && dailyChoreHistory.every(h => h.hasBonus);
+        const todayFormatted = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric' });
+        const todayEntries = Object.values(rawHistoryData || {}).filter(h => h.date && h.date.includes(todayFormatted));
+        
+        // Map history to specific required daily chores
+        const dailyChoreHistoryMap = {};
+        regularDailyChores.forEach(c => {
+          const entry = todayEntries.find(h => h.choreId === c.id);
+          if (entry) {
+            dailyChoreHistoryMap[c.id] = entry;
+          }
+        });
+
+        // Verify every required daily chore exists in today's history AND has the bonus applied
+        const allDoneWithoutAsking = regularDailyChores.every(c => {
+          const historyEntry = dailyChoreHistoryMap[c.id];
+          return historyEntry && historyEntry.hasBonus === true;
+        });
 
         const sweepBonus = allDoneWithoutAsking ? 10 : 5;
         const sweepTitle = allDoneWithoutAsking ? "Full 'Clean Sweep' Day (⭐ Without Asking)" : "Full 'Clean Sweep' Day";
