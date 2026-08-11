@@ -199,23 +199,21 @@
     .btn-retro-bonus { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
     .btn-retro-remove { background: #FED7AA; color: #9A3412; border: 1px solid #FDBA74; }
 
-    /* Sticky Manage Form Styles */
-    .sticky-manage-form {
-      position: sticky;
-      top: 140px; /* Mounts right beneath sticky header tab bar */
-      z-index: 900;
+    /* Standard In-Flow Manage Form Styles */
+    .manage-form {
       background: var(--card-bg);
       border-radius: 12px;
       padding: 12px;
       margin-bottom: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       display: flex;
       flex-direction: column;
       gap: 6px;
       border: 2px solid #E0E7FF;
+      scroll-margin-top: 140px;
     }
-    .sticky-manage-form h3 { font-size: 0.95rem; color: var(--primary); }
-    .sticky-manage-form input, .sticky-manage-form select {
+    .manage-form h3 { font-size: 0.95rem; color: var(--primary); }
+    .manage-form input, .manage-form select {
       padding: 7px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.85rem; width: 100%;
     }
     .form-row { display: flex; gap: 8px; }
@@ -521,7 +519,6 @@
       const cleanSweepClaimed = completedDailyChores['clean_sweep_claimed'] === today;
 
       if (allDailyDone && !cleanSweepClaimed) {
-        // Collect all entries created today safely using standard Date parsing
         const todayNow = new Date();
         const todayEntries = Object.values(rawHistoryData || {}).filter(h => {
           if (!h.date) return false;
@@ -531,7 +528,6 @@
                  entryDate.getDate() === todayNow.getDate();
         });
 
-        // Verify every required daily chore has at least one entry today with hasBonus === true
         const allDoneWithoutAsking = regularDailyChores.every(c => {
           const choreEntries = todayEntries.filter(h => h.choreId === c.id);
           return choreEntries.some(h => h.hasBonus === true);
@@ -726,10 +722,8 @@
       historyTab.innerHTML = entries.map(([key, h]) => {
         const isPositive = h.change > 0;
         
-        // Find corresponding chore by matching ID or Title
         const choreDef = choresData.find(c => (h.choreId && c.id === h.choreId) || c.name === h.title.replace(' (⭐ Without Asking Bonus)', ''));
         
-        // Conditions for adding or removing bonuses retroactively
         const canAddBonus = isParentMode && isPositive && h.choreId !== 'clean_sweep_claimed' && !h.hasBonus && (!choreDef || choreDef.allowBonus !== false);
         const canRemoveBonus = isParentMode && isPositive && h.choreId !== 'clean_sweep_claimed' && h.hasBonus;
 
@@ -758,7 +752,7 @@
       }).join('');
     }
 
-    /* --- STICKY MANAGE TAB IMPLEMENTATION --- */
+    /* --- IN-FLOW MANAGE TAB IMPLEMENTATION --- */
     function renderManageTab() {
       if (!isParentMode) return;
       const container = document.getElementById('manageTab');
@@ -766,7 +760,7 @@
       let formTitle = editingItemId ? `✏️ Edit Item` : `➕ Add New Chore or Reward`;
 
       let formHtml = `
-        <form class="sticky-manage-form" onsubmit="saveItem(event)">
+        <form class="manage-form" id="manageForm" onsubmit="saveItem(event)">
           <h3>${formTitle}</h3>
           <div class="form-row">
             <select id="itemType" onchange="toggleFormFields()" ${editingItemId ? 'disabled' : ''}>
@@ -898,7 +892,8 @@
       const item = type === 'chore' ? choresData.find(c => c.id === id) : rewardsData.find(r => r.id === id);
       if (item) {
         document.getElementById('itemType').value = type;
-        document.getElementById('itemName').value = item.name;
+        const nameInput = document.getElementById('itemName');
+        nameInput.value = item.name;
         document.getElementById('itemVal').value = type === 'chore' ? item.value : item.cost;
         document.getElementById('itemNote').value = item.note || '';
         if (type === 'chore') {
@@ -907,7 +902,14 @@
           document.getElementById('itemAllowBonus').checked = item.allowBonus !== false;
         }
         toggleFormFields();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Smooth scroll to the form and focus the cursor in the name field
+        const manageForm = document.getElementById('manageForm');
+        manageForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => {
+          nameInput.focus();
+          nameInput.select();
+        }, 300);
       }
     }
 
