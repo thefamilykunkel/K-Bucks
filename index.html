@@ -10,58 +10,40 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <style>
-    /* Default Kid Mode Theme (Indigo / Purple) */
-    :root {
-      --primary: #4F46E5;
-      --primary-dark: #312E81;
-      --success-light: #D1FAE5;
-      --warning-light: #FEF3C7;
-      --danger: #EF4444;
-      --gray-bg: #F9FAFB;
-      --card-bg: #FFFFFF;
-      --text: #1F2937;
-      --text-muted: #6B7280;
-      --balance-gradient: linear-gradient(135deg, #6366F1, #4F46E5);
-      --badge-bg: #E0E7FF;
-      --pill-bg: #EEF2FF;
-      --pill-text: #3730A3;
-      --pill-border: #C7D2FE;
-    }
-
-    /* Parent Mode - Abby Theme (Soft Pink & Rose) */
+    /* Default / Abby's Theme (Light Pinks & Purples - Applied Full Time) */
     [data-theme="abby"] {
-      --primary: #E11D48;
-      --primary-dark: #881337;
-      --success-light: #FFE4E6;
-      --warning-light: #FEF3C7;
-      --danger: #9F1239;
-      --gray-bg: #FFF1F2;
+      --primary: #9333EA;
+      --primary-dark: #6B21A8;
+      --success-light: #FBCFE8;
+      --warning-light: #FDE68A;
+      --danger: #EF4444;
+      --gray-bg: #FDF2F8;
       --card-bg: #FFFFFF;
-      --text: #4C0519;
-      --text-muted: #9F1239;
-      --balance-gradient: linear-gradient(135deg, #F43F5E, #E11D48);
-      --badge-bg: #FFE4E6;
-      --pill-bg: #FFF1F2;
-      --pill-text: #9F1239;
-      --pill-border: #FECDD3;
+      --text: #581C87;
+      --text-muted: #86198F;
+      --balance-gradient: linear-gradient(135deg, #EC4899, #8B5CF6);
+      --badge-bg: #F3E8FF;
+      --pill-bg: #FDF2F8;
+      --pill-text: #7E22CE;
+      --pill-border: #F5D0FE;
     }
 
-    /* Parent Mode - Nolan Theme (Blue & Light Blue) */
+    /* Nolan's Theme (Light Blues & Greens - Applied Full Time) */
     [data-theme="nolan"] {
       --primary: #0284C7;
-      --primary-dark: #0C4A6E;
-      --success-light: #E0F2FE;
-      --warning-light: #FEF3C7;
+      --primary-dark: #0F766E;
+      --success-light: #DCFCE7;
+      --warning-light: #FEF08A;
       --danger: #0369A1;
-      --gray-bg: #F0F9FF;
+      --gray-bg: #F0FDF4;
       --card-bg: #FFFFFF;
-      --text: #0C4A6E;
-      --text-muted: #0369A1;
-      --balance-gradient: linear-gradient(135deg, #38BDF8, #0284C7);
+      --text: #14532D;
+      --text-muted: #0F766E;
+      --balance-gradient: linear-gradient(135deg, #38BDF8, #10B981);
       --badge-bg: #E0F2FE;
-      --pill-bg: #F0F9FF;
-      --pill-text: #0369A1;
-      --pill-border: #BAE6FD;
+      --pill-bg: #F0FDF4;
+      --pill-text: #0F766E;
+      --pill-border: #BBF7D0;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -79,13 +61,13 @@
     header { text-align: center; margin-bottom: 4px; position: relative; }
     h1 { font-size: 1.4rem; color: var(--primary); margin-bottom: 4px; }
     
-    /* Single Control Row */
+    /* Control Row */
     .header-control-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 6px;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
 
     .status-banner {
@@ -102,7 +84,7 @@
     }
 
     .profile-btn {
-      padding: 8px 24px;
+      padding: 6px 20px;
       border: 2px solid var(--primary);
       border-radius: 20px;
       background: white;
@@ -128,13 +110,34 @@
       white-space: nowrap;
     }
     
+    /* Shorter, Inline Balance Card */
     .balance-card {
-      background: var(--balance-gradient); color: white;
-      padding: 6px; border-radius: 16px; text-align: center; margin-bottom: 4px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      background: var(--balance-gradient);
+      color: white;
+      padding: 6px 16px;
+      border-radius: 16px;
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
-    .balance-amount { font-size: 2.5rem; font-weight: 800; line-height: 0.9; }
-    .balance-label { text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem; opacity: 0.95; font-weight: 700; }
+    .balance-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      opacity: 0.95;
+    }
+    .balance-amount {
+      font-size: 2.5rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .balance-unit {
+      font-size: 0.85rem;
+      font-weight: 800;
+      opacity: 0.95;
+    }
     
     .tabs { display: flex; gap: 8px; margin-bottom: 2px; border-bottom: 2px solid #E5E7EB; background: var(--gray-bg); }
     .tab-btn {
@@ -270,13 +273,13 @@
     .hidden { display: none !important; }
   </style>
 </head>
-<body>
+<body data-theme="abby">
 
   <div class="sticky-header">
     <header>
       <h1>🪙 K-Bucks Tracker</h1>
       
-      <!-- All Controls in One Row -->
+      <!-- Control Row -->
       <div class="header-control-row">
         <span class="status-banner">● Live Sync Active</span>
         <div class="profile-selector" id="profileSelector"></div>
@@ -284,10 +287,11 @@
       </div>
     </header>
 
+    <!-- Shorter, Inline Balance Card -->
     <div class="balance-card">
-      <div class="balance-label" id="balanceLabel">BALANCE</div>
-      <div class="balance-amount" id="balanceDisplay">...</div>
-      <div style="font-size: 0.8rem; opacity: 0.9;">K-Bucks</div>
+      <span class="balance-label" id="balanceLabel">Abby has</span>
+      <span class="balance-amount" id="balanceDisplay">...</span>
+      <span class="balance-unit">K-Bucks</span>
     </div>
 
     <div class="tabs">
@@ -365,11 +369,7 @@
     let editingItemType = 'chore';
 
     function updateTheme() {
-      if (isParentMode) {
-        document.body.setAttribute('data-theme', currentKid.toLowerCase());
-      } else {
-        document.body.removeAttribute('data-theme');
-      }
+      document.body.setAttribute('data-theme', currentKid.toLowerCase());
     }
 
     function getTodayString() {
@@ -408,7 +408,6 @@
           switchTab('earn');
         }
       }
-      updateTheme();
       renderChores();
       renderRewards();
       renderHistory(rawHistoryData);
@@ -417,8 +416,7 @@
 
     function updateBalanceLabel() {
       const label = document.getElementById('balanceLabel');
-      const name = currentKid.toUpperCase();
-      label.innerText = name.endsWith('S') ? `${name}' BALANCE` : `${name}'S BALANCE`;
+      label.innerText = `${currentKid} has`;
     }
 
     function initCloudSync() {
@@ -956,7 +954,7 @@
         }
         toggleFormFields();
 
-        // Smooth scroll to the form and focus the cursor in the name field
+        // Smooth scroll to form
         const manageForm = document.getElementById('manageForm');
         manageForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
         setTimeout(() => {
@@ -984,16 +982,12 @@
     }
 
     function switchTab(tabName, evt) {
-      // Hide all tab content
       document.querySelectorAll('.list-container').forEach(el => el.classList.add('hidden'));
-      // Remove active styling from all tab buttons
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
 
-      // Show selected tab content
       const selectedTab = document.getElementById(tabName + 'Tab');
       if (selectedTab) selectedTab.classList.remove('hidden');
 
-      // Highlight selected tab button
       if (evt && evt.target) {
         evt.target.classList.add('active');
       } else {
