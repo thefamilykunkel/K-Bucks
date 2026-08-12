@@ -10,27 +10,26 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <style>
-    /* Custom CSS K-Coin Icon */
+    /* Custom CSS K-Coin Icon (Middle Aligned) */
     .k-coin {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.2em;
-  height: 1.2em;
-  background: linear-gradient(135deg, #FBBF24, #D97706);
-  color: #FFFFFF;
-  font-weight: 900;
-  border-radius: 50%;
-  font-size: 0.8em;
-  line-height: 1;
-  vertical-align: middle; /* Centers coin with text height */
-  position: relative;
-  top: -0.08em;           /* Nudges it up into true optical center */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-  border: 1px solid #F59E0B;
-  user-select: none;
-}
-
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.2em;
+      height: 1.2em;
+      background: linear-gradient(135deg, #FBBF24, #D97706);
+      color: #FFFFFF;
+      font-weight: 900;
+      border-radius: 50%;
+      font-size: 0.8em;
+      line-height: 1;
+      vertical-align: middle;
+      position: relative;
+      top: -0.08em;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+      border: 1px solid #F59E0B;
+      user-select: none;
+    }
 
     /* Default / Abby's Theme (Light Pinks & Purples - Applied Full Time) */
     [data-theme="abby"] {
@@ -313,7 +312,7 @@
     <div class="balance-card">
       <span class="balance-label" id="balanceLabel">Abby has</span>
       <span class="balance-amount" id="balanceDisplay">...</span>
-      <span class="balance-unit">K-Bucks</span>
+      <span class="balance-unit"><span class="k-coin">K</span> - Bucks</span>
     </div>
 
     <div class="tabs">
