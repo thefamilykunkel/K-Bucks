@@ -10,6 +10,25 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <style>
+    /* Custom CSS K-Coin Icon */
+    .k-coin {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.25em;
+      height: 1.25em;
+      background: linear-gradient(135deg, #FBBF24, #D97706);
+      color: #FFFFFF;
+      font-weight: 900;
+      border-radius: 50%;
+      font-size: 0.85em;
+      line-height: 1;
+      vertical-align: -0.12em;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+      border: 1px solid #F59E0B;
+      user-select: none;
+    }
+
     /* Default / Abby's Theme (Light Pinks & Purples - Applied Full Time) */
     [data-theme="abby"] {
       --primary: #9333EA;
@@ -277,7 +296,7 @@
 
   <div class="sticky-header">
     <header>
-      <h1>🪙 K-Bucks Tracker 🪙</h1>
+      <h1><span class="k-coin">K</span> K-Bucks Tracker <span class="k-coin">K</span></h1>
       
       <!-- Control Row -->
       <div class="header-control-row">
@@ -295,8 +314,8 @@
     </div>
 
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('earn', event)">Earn 🪙</button>
-      <button class="tab-btn" onclick="switchTab('spend', event)">Spend 🪙</button>
+      <button class="tab-btn active" onclick="switchTab('earn', event)">Earn <span class="k-coin">K</span></button>
+      <button class="tab-btn" onclick="switchTab('spend', event)">Spend <span class="k-coin">K</span></button>
       <button class="tab-btn" onclick="switchTab('history', event)">History</button>
       <button class="tab-btn hidden" id="manageTabBtn" onclick="switchTab('manage', event)">⚙️ Manage</button>
     </div>
