@@ -1036,8 +1036,8 @@
       const diffX = touchEndX - touchStartX;
       const diffY = touchEndY - touchStartY;
 
-      // Make sure the swipe is primarily horizontal and at least 50px long
-      if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+      // Make sure the swipe is primarily horizontal and at least 200px long
+      if (Math.abs(diffX) > 200 && Math.abs(diffX) > Math.abs(diffY)) {
         const currentIndex = kids.indexOf(currentKid);
         if (diffX < 0) {
           // Swiped left -> Switch to next kid
