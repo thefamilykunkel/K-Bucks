@@ -138,8 +138,9 @@
       padding: 6px 16px;
       border-radius: 16px;
       display: flex;
-      align-items: baseline;
+      align-items: center;
       justify-content: center;
+      vertical-align: middle;
       gap: 8px;
       margin-bottom: 6px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
@@ -147,7 +148,7 @@
     .balance-label {
       font-size: 0.85rem;
       font-weight: 700;
-      opacity: 0.95;
+      opacity: 1.2;
     }
     .balance-amount {
       font-size: 2.5rem;
@@ -157,7 +158,7 @@
     .balance-unit {
       font-size: 0.85rem;
       font-weight: 800;
-      opacity: 0.95;
+      opacity: 1.2;
     }
     
     .tabs { display: flex; gap: 8px; margin-bottom: 2px; border-bottom: 2px solid #E5E7EB; background: var(--gray-bg); }
@@ -312,7 +313,7 @@
     <div class="balance-card">
       <span class="balance-label" id="balanceLabel">Abby has</span>
       <span class="balance-amount" id="balanceDisplay">...</span>
-      <span class="balance-unit">K-Bucks</span>
+      <span class="balance-unit"><span class="k-coin">K</span> - Bucks</span>
     </div>
 
     <div class="tabs">
