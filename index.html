@@ -68,7 +68,7 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-    body { background-color: var(--gray-bg); color: var(--text); padding: 12px; padding-top: 4px; max-width: 600px; margin: 0 auto; }
+    body { background-color: var(--gray-bg); color: var(--text); padding: 12px; padding-top: 4px; max-width: 600px; margin: 0 auto; touch-action: pan-y; }
     
     .sticky-header {
       position: sticky;
@@ -140,16 +140,14 @@
       display: flex;
       align-items: baseline;
       justify-content: center;
-      vertical-align: middle;
-      align-items: center;
       gap: 8px;
       margin-bottom: 6px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
     .balance-label {
-      font-size: 1.0rem;
+      font-size: 0.85rem;
       font-weight: 700;
-      opacity: 1.2;
+      opacity: 0.95;
     }
     .balance-amount {
       font-size: 2.5rem;
@@ -157,9 +155,9 @@
       line-height: 1;
     }
     .balance-unit {
-      font-size: 1.0rem;
+      font-size: 0.85rem;
       font-weight: 800;
-      opacity: 1.2;
+      opacity: 0.95;
     }
     
     .tabs { display: flex; gap: 8px; margin-bottom: 2px; border-bottom: 2px solid #E5E7EB; background: var(--gray-bg); }
@@ -314,7 +312,7 @@
     <div class="balance-card">
       <span class="balance-label" id="balanceLabel">Abby has</span>
       <span class="balance-amount" id="balanceDisplay">...</span>
-      <span class="balance-unit"><span class="k-coin">K</span> - Bucks</span>
+      <span class="balance-unit">K-Bucks</span>
     </div>
 
     <div class="tabs">
@@ -1020,6 +1018,37 @@
         if (btn) btn.classList.add('active');
       }
     }
+
+    /* --- HORIZONTAL SWIPE TO CHANGE PROFILES --- */
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    document.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', e => {
+      const touchEndX = e.changedTouches[0].screenX;
+      const touchEndY = e.changedTouches[0].screenY;
+      
+      const diffX = touchEndX - touchStartX;
+      const diffY = touchEndY - touchStartY;
+
+      // Make sure the swipe is primarily horizontal and at least 50px long
+      if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+        const currentIndex = kids.indexOf(currentKid);
+        if (diffX < 0) {
+          // Swiped left -> Switch to next kid
+          const nextIndex = (currentIndex + 1) % kids.length;
+          selectProfile(kids[nextIndex]);
+        } else {
+          // Swiped right -> Switch to previous kid
+          const prevIndex = (currentIndex - 1 + kids.length) % kids.length;
+          selectProfile(kids[prevIndex]);
+        }
+      }
+    }, { passive: true });
 
     initCloudSync();
   </script>
