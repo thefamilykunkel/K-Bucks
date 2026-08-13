@@ -148,7 +148,7 @@
     .balance-label {
       font-size: 0.85rem;
       font-weight: 700;
-      opacity: 1.2;
+      opacity: 1.75;
     }
     .balance-amount {
       font-size: 2.5rem;
@@ -158,7 +158,7 @@
     .balance-unit {
       font-size: 0.85rem;
       font-weight: 800;
-      opacity: 1.2;
+      opacity: 1.75;
     }
     
     .tabs { display: flex; gap: 8px; margin-bottom: 2px; border-bottom: 2px solid #E5E7EB; background: var(--gray-bg); }
@@ -1036,8 +1036,8 @@
       const diffX = touchEndX - touchStartX;
       const diffY = touchEndY - touchStartY;
 
-      // Make sure the swipe is primarily horizontal and at least 200px long
-      if (Math.abs(diffX) > 200 && Math.abs(diffX) > Math.abs(diffY)) {
+      // Make sure the swipe is primarily horizontal and at least 100px long
+      if (Math.abs(diffX) > 100 && Math.abs(diffX) > Math.abs(diffY)) {
         const currentIndex = kids.indexOf(currentKid);
         if (diffX < 0) {
           // Swiped left -> Switch to next kid
