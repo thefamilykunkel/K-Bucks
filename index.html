@@ -214,10 +214,10 @@
     .btn-spend { background: var(--warning-light); color: #92400E; }
     .btn-disabled { background: #E5E7EB !important; color: #9CA3AF !important; cursor: not-allowed !important; }
 
-    /* Redeemed Badge for Rewards */
+    /* Redeemed Counter Badge for Rewards */
     .redeemed-badge {
       font-size: 0.7rem;
-      color: #4B5563;
+      color: #374151;
       background: #E5E7EB;
       padding: 4px 8px;
       border-radius: 6px;
@@ -648,8 +648,17 @@
       const historyRef = db.ref(`kids/${currentKid}/history`).push();
       const today = getTodayString();
 
+      // Increment today's count or set to 1 if first time today
+      const currentVal = completedDailyRewards[rewardId];
+      let newCount = 1;
+      if (currentVal && typeof currentVal === 'object' && currentVal.date === today) {
+        newCount = (currentVal.count || 0) + 1;
+      } else if (typeof currentVal === 'number' || typeof currentVal === 'string') {
+        newCount = currentVal === today ? 1 : 1;
+      }
+
       const updates = { balance: newBal };
-      updates[`dailyRewards/${rewardId}`] = today;
+      updates[`dailyRewards/${rewardId}`] = { date: today, count: newCount };
 
       db.ref(`kids/${currentKid}`).update(updates);
       historyRef.set({
@@ -674,7 +683,18 @@
         updates[`kids/${currentKid}/dailyChores/${choreId}`] = null;
       }
       if (rewardId && completedDailyRewards[rewardId]) {
-        updates[`kids/${currentKid}/dailyRewards/${rewardId}`] = null;
+        const today = getTodayString();
+        const currentVal = completedDailyRewards[rewardId];
+        if (currentVal && typeof currentVal === 'object' && currentVal.date === today) {
+          const currentCount = currentVal.count || 1;
+          if (currentCount > 1) {
+            updates[`kids/${currentKid}/dailyRewards/${rewardId}`] = { date: today, count: currentCount - 1 };
+          } else {
+            updates[`kids/${currentKid}/dailyRewards/${rewardId}`] = null;
+          }
+        } else {
+          updates[`kids/${currentKid}/dailyRewards/${rewardId}`] = null;
+        }
       }
 
       db.ref().update(updates);
@@ -772,13 +792,24 @@
         let cardClass = '';
 
         const canAfford = currentBalance >= r.cost;
-        const isRedeemedToday = completedDailyRewards[r.id] === today;
-        const redeemedBadgeHtml = isRedeemedToday ? `<span class="redeemed-badge">Already redeemed today</span>` : '';
+        
+        // Helper to retrieve today's count
+        const rewardData = completedDailyRewards[r.id];
+        let redeemCount = 0;
+        if (rewardData && typeof rewardData === 'object' && rewardData.date === today) {
+          redeemCount = rewardData.count || 0;
+        } else if (rewardData === today) {
+          redeemCount = 1;
+        }
+
+        const redeemedBadgeHtml = redeemCount > 0 
+          ? `<span class="redeemed-badge">Used ${redeemCount}X today</span>` 
+          : '';
 
         if (!isParentMode) {
           if (canAfford) {
             cardClass = 'affordable-card';
-            const kidBtnText = isRedeemedToday ? `✨ Redeem Again (${r.cost} KB)` : `✨ Unlocked (${r.cost} KB)`;
+            const kidBtnText = redeemCount > 0 ? `✨ Redeem Again (${r.cost} KB)` : `✨ Unlocked (${r.cost} KB)`;
             btnHtml = `
               <div class="action-group">
                 <button class="action-btn btn-kid-affordable">${kidBtnText}</button>
@@ -795,7 +826,7 @@
           }
         } else {
           const disabled = !canAfford;
-          const parentBtnText = isRedeemedToday ? `Redeem Again (-${r.cost} KB)` : `-${r.cost} KB`;
+          const parentBtnText = redeemCount > 0 ? `Redeem Again (-${r.cost} KB)` : `-${r.cost} KB`;
           const escapedName = r.name.replace(/'/g, "\\'");
           btnHtml = `<button class="action-btn btn-spend ${disabled ? 'btn-disabled' : ''}" ${disabled ? 'disabled' : ''} onclick="spend('${r.id}', '${escapedName}', ${r.cost})">${parentBtnText}</button>`;
         }
