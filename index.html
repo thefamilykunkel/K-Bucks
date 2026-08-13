@@ -214,6 +214,18 @@
     .btn-spend { background: var(--warning-light); color: #92400E; }
     .btn-disabled { background: #E5E7EB !important; color: #9CA3AF !important; cursor: not-allowed !important; }
 
+    /* Redeemed Badge for Rewards */
+    .redeemed-badge {
+      font-size: 0.7rem;
+      color: #4B5563;
+      background: #E5E7EB;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      white-space: nowrap;
+      border: 1px solid #D1D5DB;
+    }
+
     /* Kid View Reward Highlights */
     .btn-kid-affordable {
       background: #10B981 !important;
@@ -386,6 +398,7 @@
     let isParentMode = false;
     let activeParent = "";
     let completedDailyChores = {};
+    let completedDailyRewards = {};
     let rawHistoryData = {};
     let editingItemId = null;
     let editingItemType = 'chore';
@@ -468,9 +481,10 @@
       });
 
       db.ref(`kids/${currentKid}`).on('value', snapshot => {
-        const data = snapshot.val() || { balance: 0, history: {}, dailyChores: {} };
+        const data = snapshot.val() || { balance: 0, history: {}, dailyChores: {}, dailyRewards: {} };
         currentBalance = data.balance || 0;
         completedDailyChores = data.dailyChores || {};
+        completedDailyRewards = data.dailyRewards || {};
         rawHistoryData = data.history || {};
         document.getElementById('balanceDisplay').innerText = currentBalance;
         
@@ -627,14 +641,19 @@
       }
     }
 
-    function spend(title, amount) {
+    function spend(rewardId, title, amount) {
       if (!isParentMode) return;
       if (currentBalance < amount) return alert("Not enough K-Bucks!");
       const newBal = currentBalance - amount;
       const historyRef = db.ref(`kids/${currentKid}/history`).push();
+      const today = getTodayString();
 
-      db.ref(`kids/${currentKid}`).update({ balance: newBal });
+      const updates = { balance: newBal };
+      updates[`dailyRewards/${rewardId}`] = today;
+
+      db.ref(`kids/${currentKid}`).update(updates);
       historyRef.set({
+        rewardId: rewardId,
         title,
         change: -amount,
         approvedBy: activeParent,
@@ -642,7 +661,7 @@
       });
     }
 
-    function undoTransaction(key, change, choreId) {
+    function undoTransaction(key, change, choreId, rewardId) {
       if (!isParentMode) return;
       if (!confirm("Are you sure you want to erase this transaction?")) return;
 
@@ -653,6 +672,9 @@
 
       if (choreId && completedDailyChores[choreId]) {
         updates[`kids/${currentKid}/dailyChores/${choreId}`] = null;
+      }
+      if (rewardId && completedDailyRewards[rewardId]) {
+        updates[`kids/${currentKid}/dailyRewards/${rewardId}`] = null;
       }
 
       db.ref().update(updates);
@@ -743,18 +765,23 @@
     }
 
     function renderRewards() {
+      const today = getTodayString();
+
       document.getElementById('spendTab').innerHTML = rewardsData.map(r => {
         let btnHtml = '';
         let cardClass = '';
 
         const canAfford = currentBalance >= r.cost;
+        const isRedeemedToday = completedDailyRewards[r.id] === today;
+        const redeemedBadgeHtml = isRedeemedToday ? `<span class="redeemed-badge">Already redeemed today</span>` : '';
 
         if (!isParentMode) {
           if (canAfford) {
             cardClass = 'affordable-card';
+            const kidBtnText = isRedeemedToday ? `✨ Redeem Again (${r.cost} KB)` : `✨ Unlocked (${r.cost} KB)`;
             btnHtml = `
               <div class="action-group">
-                <button class="action-btn btn-kid-affordable">✨ Unlocked (${r.cost} KB)</button>
+                <button class="action-btn btn-kid-affordable">${kidBtnText}</button>
               </div>
             `;
           } else {
@@ -768,7 +795,9 @@
           }
         } else {
           const disabled = !canAfford;
-          btnHtml = `<button class="action-btn btn-spend ${disabled ? 'btn-disabled' : ''}" ${disabled ? 'disabled' : ''} onclick="spend('${r.name.replace(/'/g, "\\'")}', ${r.cost})">-${r.cost} KB</button>`;
+          const parentBtnText = isRedeemedToday ? `Redeem Again (-${r.cost} KB)` : `-${r.cost} KB`;
+          const escapedName = r.name.replace(/'/g, "\\'");
+          btnHtml = `<button class="action-btn btn-spend ${disabled ? 'btn-disabled' : ''}" ${disabled ? 'disabled' : ''} onclick="spend('${r.id}', '${escapedName}', ${r.cost})">${parentBtnText}</button>`;
         }
 
         return `
@@ -777,7 +806,10 @@
               <div class="item-title">${r.name}</div>
               ${r.note ? `<div class="item-note">${r.note}</div>` : ''}
             </div>
-            ${btnHtml}
+            <div style="display: flex; align-items: center; gap: 8px;">
+              ${redeemedBadgeHtml}
+              ${btnHtml}
+            </div>
           </div>
         `;
       }).join('');
@@ -818,7 +850,7 @@
             <div style="display:flex; align-items:center;">
               <div class="${h.change > 0 ? 'val-positive' : 'val-negative'}">${h.change > 0 ? '+' : ''}${h.change} KB</div>
               ${bonusBtnHtml}
-              ${isParentMode ? `<button class="undo-btn" onclick="undoTransaction('${key}', ${h.change}, '${h.choreId || ''}')">Erase</button>` : ''}
+              ${isParentMode ? `<button class="undo-btn" onclick="undoTransaction('${key}', ${h.change}, '${h.choreId || ''}', '${h.rewardId || ''}')">Erase</button>` : ''}
             </div>
           </div>
         `;
