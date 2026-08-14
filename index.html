@@ -648,13 +648,16 @@
       const historyRef = db.ref(`kids/${currentKid}/history`).push();
       const today = getTodayString();
 
-      // Increment today's count or set to 1 if first time today
+      // Fix count logic: convert legacy formats and calculate accurate daily total
       const currentVal = completedDailyRewards[rewardId];
       let newCount = 1;
-      if (currentVal && typeof currentVal === 'object' && currentVal.date === today) {
-        newCount = (currentVal.count || 0) + 1;
-      } else if (typeof currentVal === 'number' || typeof currentVal === 'string') {
-        newCount = currentVal === today ? 1 : 1;
+
+      if (currentVal) {
+        if (typeof currentVal === 'object' && currentVal.date === today) {
+          newCount = (parseInt(currentVal.count) || 0) + 1;
+        } else if (typeof currentVal === 'string' && currentVal === today) {
+          newCount = 2;
+        }
       }
 
       const updates = { balance: newBal };
@@ -686,7 +689,7 @@
         const today = getTodayString();
         const currentVal = completedDailyRewards[rewardId];
         if (currentVal && typeof currentVal === 'object' && currentVal.date === today) {
-          const currentCount = currentVal.count || 1;
+          const currentCount = parseInt(currentVal.count) || 1;
           if (currentCount > 1) {
             updates[`kids/${currentKid}/dailyRewards/${rewardId}`] = { date: today, count: currentCount - 1 };
           } else {
@@ -793,11 +796,11 @@
 
         const canAfford = currentBalance >= r.cost;
         
-        // Helper to retrieve today's count
+        // Retrieve today's count correctly
         const rewardData = completedDailyRewards[r.id];
         let redeemCount = 0;
         if (rewardData && typeof rewardData === 'object' && rewardData.date === today) {
-          redeemCount = rewardData.count || 0;
+          redeemCount = parseInt(rewardData.count) || 0;
         } else if (rewardData === today) {
           redeemCount = 1;
         }
