@@ -10,7 +10,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <style>
-    /* Custom CSS K-Coin Icon (Middle Aligned) */
     .k-coin {
       display: inline-flex;
       align-items: center;
@@ -31,7 +30,6 @@
       user-select: none;
     }
 
-    /* Default / Abby's Theme (Light Pinks & Purples - Applied Full Time) */
     [data-theme="abby"] {
       --primary: #9333EA;
       --primary-dark: #6B21A8;
@@ -49,7 +47,6 @@
       --pill-border: #F5D0FE;
     }
 
-    /* Nolan's Theme (Light Blues & Greens - Applied Full Time) */
     [data-theme="nolan"] {
       --primary: #0284C7;
       --primary-dark: #0F766E;
@@ -71,95 +68,40 @@
     body { background-color: var(--gray-bg); color: var(--text); padding: 12px; padding-top: 4px; max-width: 600px; margin: 0 auto; touch-action: pan-y; }
     
     .sticky-header {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      background-color: var(--gray-bg);
-      padding-top: 4px;
-      padding-bottom: 4px;
+      position: sticky; top: 0; z-index: 1000;
+      background-color: var(--gray-bg); padding-top: 4px; padding-bottom: 4px;
     }
 
     header { text-align: center; margin-bottom: 4px; position: relative; }
     h1 { font-size: 1.4rem; color: var(--primary); margin-bottom: 4px; }
     
-    /* Control Row */
     .header-control-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 6px;
+      display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 6px;
     }
 
-    .status-banner {
-      color: #10B981;
-      font-weight: 600;
-      font-size: 0.7rem;
-      white-space: nowrap;
-    }
+    .status-banner { color: #10B981; font-weight: 600; font-size: 0.7rem; white-space: nowrap; }
 
-    .profile-selector {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-    }
+    .profile-selector { display: flex; justify-content: center; gap: 10px; }
 
     .profile-btn {
-      padding: 6px 20px;
-      border: 2px solid var(--primary);
-      border-radius: 20px;
-      background: white;
-      color: var(--primary);
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 0.8rem;
+      padding: 6px 20px; border: 2px solid var(--primary); border-radius: 20px;
+      background: white; color: var(--primary); font-weight: bold; cursor: pointer; font-size: 0.8rem;
     }
-    .profile-btn.active {
-      background: var(--primary);
-      color: white;
-    }
+    .profile-btn.active { background: var(--primary); color: white; }
 
     .mode-badge {
-      background: var(--badge-bg);
-      color: var(--primary);
-      padding: 5px 10px;
-      border-radius: 12px;
-      font-weight: bold;
-      cursor: pointer;
-      border: none;
-      font-size: 0.75rem;
-      white-space: nowrap;
+      background: var(--badge-bg); color: var(--primary); padding: 5px 10px;
+      border-radius: 12px; font-weight: bold; cursor: pointer; border: none; font-size: 0.75rem; white-space: nowrap;
     }
     
-    /* Shorter, Inline Balance Card */
     .balance-card {
-      background: var(--balance-gradient);
-      color: white;
-      padding: 6px 16px;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      vertical-align: middle;
-      gap: 8px;
-      margin-bottom: 6px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      background: var(--balance-gradient); color: white; padding: 6px 16px;
+      border-radius: 16px; display: flex; align-items: center; justify-content: center;
+      vertical-align: middle; gap: 8px; margin-bottom: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
-    .balance-label {
-      font-size: 1.2rem;
-      font-weight: 700;
-      opacity: 0.95;
-    }
-    .balance-amount {
-      font-size: 2.5rem;
-      font-weight: 800;
-      line-height: 1;
-    }
-    .balance-unit {
-      font-size: 1.2rem;
-      font-weight: 800;
-      opacity: 0.95;
-    }
+    .balance-label { font-size: 1.2rem; font-weight: 700; opacity: 0.95; }
+    .balance-amount { font-size: 2.5rem; font-weight: 800; line-height: 1; }
+    .balance-unit { font-size: 1.2rem; font-weight: 800; opacity: 0.95; }
     
     .tabs { display: flex; gap: 8px; margin-bottom: 2px; border-bottom: 2px solid #E5E7EB; background: var(--gray-bg); }
     .tab-btn {
@@ -168,76 +110,23 @@
     }
     .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
     
-    /* Manual Entry Bar in History Tab */
     .manual-entry-bar {
-      background: var(--card-bg);
-      border: 2px solid var(--pill-border);
-      border-radius: 12px;
-      padding: 10px 12px;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      background: var(--card-bg); border: 2px solid var(--pill-border); border-radius: 12px;
+      padding: 10px 12px; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      display: flex; flex-direction: column; gap: 8px;
     }
-    .manual-entry-title {
-      font-size: 0.8rem;
-      font-weight: 800;
-      color: var(--primary);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .manual-entry-controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-    }
-    .manual-entry-controls select, .manual-entry-controls input {
-      padding: 6px 8px;
-      border: 1px solid #D1D5DB;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      width: 100%;
-    }
-    .manual-entry-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-    }
-    .manual-checkbox {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--text);
-      cursor: pointer;
-    }
-    .btn-manual-submit {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 0.75rem;
-      cursor: pointer;
-      white-space: nowrap;
-    }
+    .manual-entry-title { font-size: 0.8rem; font-weight: 800; color: var(--primary); display: flex; justify-content: space-between; align-items: center; }
+    .manual-entry-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .manual-entry-controls select, .manual-entry-controls input { padding: 6px 8px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.75rem; width: 100%; }
+    .manual-entry-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .manual-checkbox { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; font-weight: 600; color: var(--text); cursor: pointer; }
+    .btn-manual-submit { background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.75rem; cursor: pointer; white-space: nowrap; }
 
     .list-container { display: flex; flex-direction: column; gap: 8px; padding-bottom: 24px; }
     
-    /* Clean Sweep Dynamic Banner */
     .clean-sweep-banner {
-      background: linear-gradient(135deg, #F59E0B, #D97706);
-      color: white;
-      border-radius: 12px;
-      padding: 12px 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border-radius: 12px;
+      padding: 12px 14px; display: flex; justify-content: space-between; align-items: center;
       box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
     }
     .clean-sweep-title { font-weight: 800; font-size: 0.95rem; }
@@ -245,86 +134,41 @@
 
     .card-item {
       background: var(--card-bg); border-radius: 12px; padding: 12px 14px;
-      display: flex; justify-content: space-between; align-items: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
-    .card-item.affordable-card {
-      background: #F0FDF4;
-      border: 1px solid #BBF7D0;
-    }
+    .card-item.affordable-card { background: #F0FDF4; border: 1px solid #BBF7D0; }
 
     .item-info { flex: 1; padding-right: 12px; }
     .item-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 2px; }
     .item-note { font-size: 0.75rem; color: var(--text-muted); font-style: italic; }
     
-    .action-group {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 4px;
-    }
+    .action-group { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 
-    .action-btn {
-      padding: 8px 12px; border: none; border-radius: 8px; font-weight: bold;
-      cursor: pointer; white-space: nowrap; font-size: 0.85rem;
-    }
+    .action-btn { padding: 8px 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; white-space: nowrap; font-size: 0.85rem; }
     .btn-earn { background: var(--success-light); color: var(--text); }
     .btn-bonus { background: #FEF3C7; color: #92400E; padding: 4px 8px; font-size: 0.7rem; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
     .btn-spend { background: var(--warning-light); color: #92400E; }
     .btn-disabled { background: #E5E7EB !important; color: #9CA3AF !important; cursor: not-allowed !important; }
 
-    /* Redeemed Counter Badge for Rewards */
-    .redeemed-badge {
-      font-size: 0.7rem;
-      color: #374151;
-      background: #E5E7EB;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-weight: 700;
-      white-space: nowrap;
-      border: 1px solid #D1D5DB;
-    }
+    .redeemed-badge { font-size: 0.7rem; color: #374151; background: #E5E7EB; padding: 4px 8px; border-radius: 6px; font-weight: 700; white-space: nowrap; border: 1px solid #D1D5DB; }
 
-    /* Kid View Reward Highlights */
-    .btn-kid-affordable {
-      background: #10B981 !important;
-      color: white !important;
-      font-weight: 800 !important;
-      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-    }
-    .btn-kid-locked {
-      background: #E5E7EB !important;
-      color: #6B7280 !important;
-      border: 1px solid #D1D5DB;
-    }
-    .needed-badge {
-      font-size: 0.7rem;
-      color: #DC2626;
-      font-weight: 700;
-      background: #FEE2E2;
-      padding: 2px 6px;
-      border-radius: 6px;
-      margin-top: 2px;
-      white-space: nowrap;
-    }
+    .btn-kid-affordable { background: #10B981 !important; color: white !important; font-weight: 800 !important; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3); }
+    .btn-kid-locked { background: #E5E7EB !important; color: #6B7280 !important; border: 1px solid #D1D5DB; }
+    .needed-badge { font-size: 0.7rem; color: #DC2626; font-weight: 700; background: #FEE2E2; padding: 2px 6px; border-radius: 6px; margin-top: 2px; white-space: nowrap; }
 
-    /* Point Breakdown Pill */
     .point-breakdown-pill {
-      display: inline-block;
-      background: var(--pill-bg);
-      color: var(--pill-text);
-      border: 1px solid var(--pill-border);
-      font-size: 0.65rem;
-      font-weight: 700;
-      padding: 1px 6px;
-      border-radius: 10px;
-      margin-top: 3px;
+      display: inline-block; background: var(--pill-bg); color: var(--pill-text);
+      border: 1px solid var(--pill-border); font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 10px; margin-top: 3px;
+    }
+
+    .assign-pill {
+      display: inline-block; background: #E0F2FE; color: #0369A1;
+      border: 1px solid #BAE6FD; font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 10px; margin-top: 3px; margin-left: 4px;
     }
 
     .history-item {
       display: flex; justify-content: space-between; align-items: center; padding: 10px 12px;
-      background: white; border-radius: 8px; margin-bottom: 6px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      background: white; border-radius: 8px; margin-bottom: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
     .history-by { font-size: 0.7rem; color: var(--primary); font-weight: 600; }
     .val-positive { color: #10B981; font-weight: bold; }
@@ -338,23 +182,13 @@
     .btn-retro-bonus { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
     .btn-retro-remove { background: #FED7AA; color: #9A3412; border: 1px solid #FDBA74; }
 
-    /* Standard In-Flow Manage Form Styles */
     .manage-form {
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      border: 2px solid var(--pill-border);
-      scroll-margin-top: 140px;
+      background: var(--card-bg); border-radius: 12px; padding: 12px; margin-bottom: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; flex-direction: column; gap: 6px;
+      border: 2px solid var(--pill-border); scroll-margin-top: 140px;
     }
     .manage-form h3 { font-size: 0.95rem; color: var(--primary); }
-    .manage-form input, .manage-form select {
-      padding: 7px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.85rem; width: 100%;
-    }
+    .manage-form input, .manage-form select { padding: 7px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 0.85rem; width: 100%; }
     .form-row { display: flex; gap: 8px; }
     .checkbox-group { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; margin-top: 2px; }
     .checkbox-item { display: flex; align-items: center; gap: 6px; cursor: pointer; }
@@ -372,7 +206,6 @@
     <header>
       <h1><span class="k-coin">K</span> K-Bucks Tracker <span class="k-coin">K</span></h1>
       
-      <!-- Control Row -->
       <div class="header-control-row">
         <span class="status-banner">● Live Sync Active</span>
         <div class="profile-selector" id="profileSelector"></div>
@@ -380,7 +213,6 @@
       </div>
     </header>
 
-    <!-- Shorter, Inline Balance Card -->
     <div class="balance-card">
       <span class="balance-label" id="balanceLabel">Abby has</span>
       <span class="balance-amount" id="balanceDisplay">...</span>
@@ -401,7 +233,6 @@
   <div id="manageTab" class="list-container hidden"></div>
 
   <script>
-    // FIREBASE CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyDAkEdkBF9WRWiXm7HYtc95wZtO8Jc9vE4",
       authDomain: "k-bucks-b751f.firebaseapp.com",
@@ -416,25 +247,22 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // SEPARATE PARENT PINS
-    const MOM_PIN = "1348";
-    const DAD_PIN = "1728";
     const WITHOUT_ASKING_BONUS = 3;
 
     const defaultChoresData = [
-      { id: "c1", name: "Make your bed", value: 2, note: "Every morning", daily: true, oncePerDay: true, allowBonus: true },
-      { id: "c2", name: "Tidy your room", value: 2, note: "Before bed, once a day", daily: true, oncePerDay: true, allowBonus: true },
-      { id: "c3", name: "Pick up toys around the house daily", value: 2, note: "Before bed ONLY, once a day", daily: true, oncePerDay: true, allowBonus: true },
-      { id: "c4", name: "Dishes in sink", value: 2, note: "Once a day", daily: true, oncePerDay: true, allowBonus: true },
-      { id: "c5", name: "Unload Dishwasher", value: 2, note: "", daily: false, oncePerDay: false, allowBonus: false },
-      { id: "c6", name: "Put dirty laundry in hamper", value: 2, note: "Not the floor! Once a day", daily: true, oncePerDay: true, allowBonus: true },
-      { id: "c7", name: "Change to PJs, RR, Brush teeth, without help", value: 5, note: "Once a day", daily: true, oncePerDay: true, allowBonus: true },
-      { id: "c9", name: "Fold clean clothes & put away", value: 10, note: "In drawers/closet", daily: false, oncePerDay: false, allowBonus: false },
-      { id: "c10", name: "Let sibling pick show", value: 5, note: "Per day", daily: false, oncePerDay: true, allowBonus: false },
-      { id: "c11", name: "Let sibling unlock door", value: 5, note: "Per day", daily: false, oncePerDay: true, allowBonus: false },
-      { id: "c12", name: "Open door for family/stranger at a place", value: 5, note: "Per day", daily: false, oncePerDay: true, allowBonus: false },
-      { id: "c13", name: "Do something kind for family", value: 5, note: "", daily: false, oncePerDay: false, allowBonus: false },
-      { id: "c14", name: "Bring in trash can", value: 5, note: "", daily: false, oncePerDay: true, allowBonus: false }
+      { id: "c1", name: "Make your bed", value: 2, note: "Every morning", daily: true, oncePerDay: true, allowBonus: true, assignedTo: "all" },
+      { id: "c2", name: "Tidy your room", value: 2, note: "Before bed, once a day", daily: true, oncePerDay: true, allowBonus: true, assignedTo: "all" },
+      { id: "c3", name: "Pick up toys around the house daily", value: 2, note: "Before bed ONLY, once a day", daily: true, oncePerDay: true, allowBonus: true, assignedTo: "all" },
+      { id: "c4", name: "Dishes in sink", value: 2, note: "Once a day", daily: true, oncePerDay: true, allowBonus: true, assignedTo: "all" },
+      { id: "c5", name: "Unload Dishwasher", value: 2, note: "", daily: false, oncePerDay: false, allowBonus: false, assignedTo: "all" },
+      { id: "c6", name: "Put dirty laundry in hamper", value: 2, note: "Not the floor! Once a day", daily: true, oncePerDay: true, allowBonus: true, assignedTo: "all" },
+      { id: "c7", name: "Change to PJs, RR, Brush teeth, without help", value: 5, note: "Once a day", daily: true, oncePerDay: true, allowBonus: true, assignedTo: "all" },
+      { id: "c9", name: "Fold clean clothes & put away", value: 10, note: "In drawers/closet", daily: false, oncePerDay: false, allowBonus: false, assignedTo: "all" },
+      { id: "c10", name: "Let sibling pick show", value: 5, note: "Per day", daily: false, oncePerDay: true, allowBonus: false, assignedTo: "all" },
+      { id: "c11", name: "Let sibling unlock door", value: 5, note: "Per day", daily: false, oncePerDay: true, allowBonus: false, assignedTo: "all" },
+      { id: "c12", name: "Open door for family/stranger at a place", value: 5, note: "Per day", daily: false, oncePerDay: true, allowBonus: false, assignedTo: "all" },
+      { id: "c13", name: "Do something kind for family", value: 5, note: "", daily: false, oncePerDay: false, allowBonus: false, assignedTo: "all" },
+      { id: "c14", name: "Bring in trash can", value: 5, note: "", daily: false, oncePerDay: true, allowBonus: false, assignedTo: "all" }
     ];
 
     const defaultRewardsData = [
@@ -455,7 +283,7 @@
     let currentKid = kids[0];
     let currentBalance = 0;
     let isParentMode = false;
-    let activeParent = "";
+    let activeParent = "Parent";
     let completedDailyChores = {};
     let completedDailyRewards = {};
     let rawHistoryData = {};
@@ -474,7 +302,6 @@
     function getYesterdayDateTimeLocal() {
       const d = new Date();
       d.setDate(d.getDate() - 1);
-      // Format as YYYY-MM-DDTHH:mm
       const pad = n => String(n).padStart(2, '0');
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T18:00`;
     }
@@ -482,34 +309,39 @@
     function toggleParentMode() {
       if (!isParentMode) {
         const pin = prompt("Enter Mom or Dad PIN:");
-        if (pin === MOM_PIN) {
+        if (pin === "1348") {
           isParentMode = true;
           activeParent = "Mom";
-          document.getElementById('modeBtn').innerText = "🔒 Mom Mode";
-          document.getElementById('modeBtn').style.background = "var(--primary-dark)";
-          document.getElementById('modeBtn').style.color = "white";
-          document.getElementById('manageTabBtn').classList.remove('hidden');
-        } else if (pin === DAD_PIN) {
+        } else if (pin === "1728") {
           isParentMode = true;
           activeParent = "Dad";
-          document.getElementById('modeBtn').innerText = "🔒 Dad Mode";
-          document.getElementById('modeBtn').style.background = "var(--primary-dark)";
-          document.getElementById('modeBtn').style.color = "white";
-          document.getElementById('manageTabBtn').classList.remove('hidden');
         } else if (pin !== null) {
           alert("Incorrect PIN!");
+          return;
         }
       } else {
         isParentMode = false;
         activeParent = "";
-        document.getElementById('modeBtn').innerText = "👀 Kid View";
-        document.getElementById('modeBtn').style.background = "var(--badge-bg)";
-        document.getElementById('modeBtn').style.color = "var(--primary)";
-        document.getElementById('manageTabBtn').classList.add('hidden');
+      }
+
+      const modeBtn = document.getElementById('modeBtn');
+      const manageTabBtn = document.getElementById('manageTabBtn');
+
+      if (isParentMode) {
+        modeBtn.innerText = `🔒 ${activeParent} Mode`;
+        modeBtn.style.background = "var(--primary-dark)";
+        modeBtn.style.color = "white";
+        manageTabBtn.classList.remove('hidden');
+      } else {
+        modeBtn.innerText = "👀 Kid View";
+        modeBtn.style.background = "var(--badge-bg)";
+        modeBtn.style.color = "var(--primary)";
+        manageTabBtn.classList.add('hidden');
         if (!document.getElementById('manageTab').classList.contains('hidden')) {
           switchTab('earn');
         }
       }
+
       renderChores();
       renderRewards();
       renderHistory(rawHistoryData);
@@ -517,8 +349,7 @@
     }
 
     function updateBalanceLabel() {
-      const label = document.getElementById('balanceLabel');
-      label.innerText = `${currentKid} has`;
+      document.getElementById('balanceLabel').innerText = `${currentKid} has`;
     }
 
     function initCloudSync() {
@@ -648,7 +479,6 @@
       const newBal = currentBalance + totalEarned;
       const historyRef = db.ref(`kids/${currentKid}/history`).push();
 
-      // Only update balance and history, avoiding locking today's daily chores slot
       db.ref(`kids/${currentKid}`).update({ balance: newBal });
       historyRef.set({
         choreId: selectedChore.id,
@@ -720,7 +550,10 @@
 
     function checkAndAwardCleanSweep() {
       const today = getTodayString();
-      const regularDailyChores = choresData.filter(c => c.daily);
+      
+      // Filter clean sweep chores assigned specifically to this kid or shared
+      const visibleChores = choresData.filter(c => !c.assignedTo || c.assignedTo === 'all' || c.assignedTo === currentKid);
+      const regularDailyChores = visibleChores.filter(c => c.daily);
       if (regularDailyChores.length === 0) return;
 
       const allDailyDone = regularDailyChores.every(c => completedDailyChores[c.id] === today);
@@ -769,7 +602,6 @@
       const historyRef = db.ref(`kids/${currentKid}/history`).push();
       const today = getTodayString();
 
-      // Fix count logic: convert legacy formats and calculate accurate daily total
       const currentVal = completedDailyRewards[rewardId];
       let newCount = 1;
 
@@ -833,7 +665,10 @@
     function renderChores() {
       const today = getTodayString();
       
-      const regularDailyChores = choresData.filter(c => c.daily);
+      // FILTER CHORES: Show only chores assigned to "all" OR specifically to currentKid
+      const visibleChores = choresData.filter(c => !c.assignedTo || c.assignedTo === 'all' || c.assignedTo === currentKid);
+
+      const regularDailyChores = visibleChores.filter(c => c.daily);
       const allDailyDone = regularDailyChores.length > 0 && regularDailyChores.every(c => completedDailyChores[c.id] === today);
       const cleanSweepClaimed = completedDailyChores['clean_sweep_claimed'] === today;
 
@@ -869,7 +704,7 @@
         }
       }
 
-      const choresCardsHtml = choresData.map(c => {
+      const choresCardsHtml = visibleChores.map(c => {
         const isDoneToday = c.oncePerDay && (completedDailyChores[c.id] === today);
         let btnHtml = '';
 
@@ -893,12 +728,16 @@
           ? `<div class="point-breakdown-pill">Base: ${c.value} KB | Bonus: +${WITHOUT_ASKING_BONUS} KB</div>` 
           : `<div class="point-breakdown-pill">Base: ${c.value} KB</div>`;
 
+        const assignPill = (c.assignedTo && c.assignedTo !== 'all')
+          ? `<div class="assign-pill">👤 ${c.assignedTo} Only</div>`
+          : '';
+
         return `
           <div class="card-item">
             <div class="item-info">
               <div class="item-title">${c.name}</div>
               ${c.note ? `<div class="item-note">${c.note}</div>` : ''}
-              ${breakdownPill}
+              ${breakdownPill}${assignPill}
             </div>
             ${btnHtml}
           </div>
@@ -917,7 +756,6 @@
 
         const canAfford = currentBalance >= r.cost;
         
-        // Retrieve today's count correctly
         const rewardData = completedDailyRewards[r.id];
         let redeemCount = 0;
         if (rewardData && typeof rewardData === 'object' && rewardData.date === today) {
@@ -976,7 +814,9 @@
 
       let manualBarHtml = '';
       if (isParentMode) {
-        const choreOptionsHtml = choresData.map(c => `
+        // Only show chores available to this kid in manual log select
+        const visibleChores = choresData.filter(c => !c.assignedTo || c.assignedTo === 'all' || c.assignedTo === currentKid);
+        const choreOptionsHtml = visibleChores.map(c => `
           <option value="${c.id}">${c.name} (+${c.value} KB)</option>
         `).join('');
 
@@ -1044,12 +884,14 @@
       historyTab.innerHTML = manualBarHtml + listHtml;
     }
 
-    /* --- IN-FLOW MANAGE TAB IMPLEMENTATION --- */
     function renderManageTab() {
       if (!isParentMode) return;
       const container = document.getElementById('manageTab');
 
       let formTitle = editingItemId ? `✏️ Edit Item` : `➕ Add New Chore or Reward`;
+
+      // Dynamic Assigned To dropdown options
+      const kidOptionsHtml = kids.map(k => `<option value="${k}">${k} Only</option>`).join('');
 
       let formHtml = `
         <form class="manage-form" id="manageForm" onsubmit="saveItem(event)">
@@ -1065,6 +907,13 @@
           <input type="text" id="itemNote" placeholder="Note / Description (Optional)" />
           
           <div class="checkbox-group" id="choreCheckboxes">
+            <div style="margin-bottom: 4px;">
+              <label style="font-size: 0.75rem; font-weight: bold; color: var(--primary);">Assign To:</label>
+              <select id="itemAssignedTo" style="padding: 4px; border-radius: 6px; font-size: 0.8rem; margin-top: 2px;">
+                <option value="all">All Kids (Shared)</option>
+                ${kidOptionsHtml}
+              </select>
+            </div>
             <label class="checkbox-item">
               <input type="checkbox" id="itemDaily" />
               <span>Regular Daily Chore (Required for Clean Sweep)</span>
@@ -1090,10 +939,12 @@
         <h4 style="margin: 8px 0 4px 0; color: var(--primary);">Current Chores</h4>
         ${choresData.map(c => {
           let tags = [];
+          if (c.assignedTo && c.assignedTo !== 'all') tags.push(`Assigned: ${c.assignedTo}`);
+          else tags.push("Assigned: All Kids");
           if (c.daily) tags.push("Clean Sweep Required");
           if (c.oncePerDay) tags.push("Once Daily Limit");
           if (c.allowBonus !== false) tags.push("Bonus Allowed");
-          const tagStr = tags.length ? tags.join(" • ") : "Reusable Chore";
+          const tagStr = tags.join(" • ");
 
           return `
             <div class="card-item">
@@ -1148,6 +999,7 @@
       const note = document.getElementById('itemNote').value;
 
       if (type === 'chore') {
+        const assignedTo = document.getElementById('itemAssignedTo').value;
         const daily = document.getElementById('itemDaily').checked;
         const oncePerDay = document.getElementById('itemOncePerDay').checked;
         const allowBonus = document.getElementById('itemAllowBonus').checked;
@@ -1155,10 +1007,10 @@
         let list = [...choresData];
         if (editingItemId) {
           const idx = list.findIndex(i => i.id === editingItemId);
-          if (idx !== -1) list[idx] = { id: editingItemId, name, value: val, note, daily, oncePerDay, allowBonus };
+          if (idx !== -1) list[idx] = { id: editingItemId, name, value: val, note, daily, oncePerDay, allowBonus, assignedTo };
         } else {
           const newId = 'c' + Date.now();
-          list.push({ id: newId, name, value: val, note, daily, oncePerDay, allowBonus });
+          list.push({ id: newId, name, value: val, note, daily, oncePerDay, allowBonus, assignedTo });
         }
         db.ref('settings/chores').set(list);
       } else {
@@ -1189,13 +1041,13 @@
         document.getElementById('itemVal').value = type === 'chore' ? item.value : item.cost;
         document.getElementById('itemNote').value = item.note || '';
         if (type === 'chore') {
+          document.getElementById('itemAssignedTo').value = item.assignedTo || 'all';
           document.getElementById('itemDaily').checked = !!item.daily;
           document.getElementById('itemOncePerDay').checked = !!item.oncePerDay;
           document.getElementById('itemAllowBonus').checked = item.allowBonus !== false;
         }
         toggleFormFields();
 
-        // Smooth scroll to form
         const manageForm = document.getElementById('manageForm');
         manageForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
         setTimeout(() => {
@@ -1239,7 +1091,6 @@
       }
     }
 
-    /* --- HORIZONTAL SWIPE TO CHANGE PROFILES --- */
     let touchStartX = 0;
     let touchStartY = 0;
 
@@ -1255,15 +1106,12 @@
       const diffX = touchEndX - touchStartX;
       const diffY = touchEndY - touchStartY;
 
-      // Make sure the swipe is primarily horizontal and at least 100px long
       if (Math.abs(diffX) > 100 && Math.abs(diffX) > Math.abs(diffY)) {
         const currentIndex = kids.indexOf(currentKid);
         if (diffX < 0) {
-          // Swiped left -> Switch to next kid
           const nextIndex = (currentIndex + 1) % kids.length;
           selectProfile(kids[nextIndex]);
         } else {
-          // Swiped right -> Switch to previous kid
           const prevIndex = (currentIndex - 1 + kids.length) % kids.length;
           selectProfile(kids[prevIndex]);
         }
