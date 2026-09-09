@@ -408,6 +408,7 @@
         renderHistory(rawHistoryData);
         renderChores();
         renderRewards();
+        renderManageTab();
       });
     } /* END: initCloudSync */
 
@@ -941,6 +942,9 @@
       let formTitle = editingItemId ? `✏️ Edit Item` : `➕ Add New Chore or Reward`;
       const kidOptionsHtml = kids.map(k => `<option value="${k}">${k} Only</option>`).join('');
 
+      // FILTER CHORES: Filter chores on Manage tab by current kid profile
+      const visibleManageChores = choresData.filter(c => !c.assignedTo || c.assignedTo === 'all' || c.assignedTo === currentKid);
+
       let formHtml = `
         <form class="manage-form" id="manageForm" onsubmit="saveItem(event)">
           <h3>${formTitle}</h3>
@@ -984,8 +988,8 @@
       `;
 
       let choresListHtml = `
-        <h4 style="margin: 8px 0 4px 0; color: var(--primary);">Current Chores (Reorder with ⬆️ ⬇️)</h4>
-        ${choresData.map((c, index) => {
+        <h4 style="margin: 8px 0 4px 0; color: var(--primary);">Current Chores for ${currentKid} (Reorder with ⬆️ ⬇️)</h4>
+        ${visibleManageChores.map((c, index) => {
           let tags = [];
           if (c.assignedTo && c.assignedTo !== 'all') tags.push(`Assigned: ${c.assignedTo}`);
           else tags.push("Assigned: All Kids");
@@ -995,7 +999,7 @@
           const tagStr = tags.join(" • ");
 
           const isFirst = index === 0;
-          const isLast = index === choresData.length - 1;
+          const isLast = index === visibleManageChores.length - 1;
 
           return `
             <div class="card-item">
